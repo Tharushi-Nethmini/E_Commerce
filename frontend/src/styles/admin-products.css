@@ -1,0 +1,172 @@
+.admin-products-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(49, 46, 129, 0.10);
+  padding: 32px 24px 24px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-products-loading {
+  color: #6366f1;
+  font-size: 1.1rem;
+  padding: 32px 0;
+  text-align: center;
+}
+
+.admin-products-error {
+  color: #ef4444;
+  font-size: 1.1rem;
+  padding: 32px 0;
+  text-align: center;
+}
+
+.admin-products-table th {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.98rem;
+}
+
+.admin-products-price {
+  color: #312e81;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.admin-products-stock {
+  color: #059669;
+  font-weight: 600;
+}
+.admin-products-stock.low {
+  color: #f59e42;
+}
+
+.admin-products-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.admin-products-status.status-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+.admin-products-status.status-approved {
+  background: #d1fae5;
+  color: #047857;
+}
+.admin-products-status.status-rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.admin-products-page {
+  padding: 32px 24px;
+  background: #f8f9fb;
+  min-height: 100vh;
+}
+
+.admin-products-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #312e81;
+}
+
+.admin-products-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(49, 46, 129, 0.06);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-products-table th, .admin-products-table td {
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.admin-products-table th {
+  background: #6366f1;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.admin-products-table tr:nth-child(even) {
+  background: #f3f4f6;
+}
+
+.admin-products-table tr:hover {
+  background: #e0e7ff;
+}
+
+.admin-action-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-action-btn.approve {
+  background: #22c55e;
+  color: #fff;
+}
+
+.admin-action-btn.reject {
+  background: #ef4444;
+  color: #fff;
+}
+
+.admin-action-btn.delete {
+  background: #fbbf24;
+  color: #fff;
+}
+
+.admin-add-btn {
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-add-btn:hover {
+  background: #4f46e5;
+}
+
+.admin-modal {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(49, 46, 129, 0.12);
+  padding: 32px 24px;
+  max-width: 400px;
+  margin: 40px auto;
+}
+
+.admin-modal input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.admin-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

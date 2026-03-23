@@ -1,0 +1,35 @@
+const swaggerJsdoc = require('swagger-jsdoc');
+
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Payment Service API',
+      version: '1.0.0',
+      description: 'Payment processing microservice',
+      contact: {
+        name: 'API Support'
+      }
+    },
+    servers: [
+      {
+        url: 'http://localhost:8083',
+        description: 'Development server'
+      }
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    }
+  },
+  apis: ['./src/routes/*.js']
+};
+
+const swaggerSpec = swaggerJsdoc(options);
+
+module.exports = swaggerSpec;

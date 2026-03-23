@@ -1,0 +1,190 @@
+/* Supplier Product Modal - Admin Style */
+.supplier-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+.supplier-modal {
+  background: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  padding: 2rem;
+  max-width: 30rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: productModalIn 0.2s ease;
+}
+@keyframes productModalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.supplier-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1.5px solid #F3F4F6;
+}
+.supplier-modal-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.3px;
+}
+.supplier-modal-close {
+  background: #F3F4F6;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: #6B7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.supplier-modal-close:hover {
+  background: #E5E7EB;
+  color: #111827;
+}
+.supplier-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+}
+.supplier-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.supplier-form-group label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.supplier-form-group input,
+.supplier-form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 0.625rem;
+  font-size: 0.9375rem;
+  background: #F9FAFB;
+  color: #111827;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.supplier-form-group textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+.supplier-form-group input:focus,
+.supplier-form-group textarea:focus {
+  outline: none;
+  border-color: #4F46E5;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
+}
+.supplier-image-zone {
+  position: relative;
+  border: 2px dashed #C7D2FE;
+  border-radius: 0.75rem;
+  background: #F5F3FF;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.supplier-image-zone:hover {
+  border-color: #4F46E5;
+  background: #EEF2FF;
+}
+.supplier-image-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+.supplier-image-zone-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: #818CF8;
+  pointer-events: none;
+  padding: 1.5rem;
+}
+.supplier-image-zone-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4F46E5;
+}
+.supplier-image-zone-sub {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+}
+.supplier-image-preview {
+  width: 100%;
+  height: 160px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  background: white;
+  padding: 0.5rem;
+  pointer-events: none;
+}
+.supplier-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.supplier-modal-cancel,
+.supplier-modal-submit {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 0.625rem;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.2s;
+}
+.supplier-modal-cancel {
+  background: white;
+  color: #374151;
+  border: 1.5px solid #E5E7EB;
+}
+.supplier-modal-cancel:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+.supplier-modal-submit {
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+}
+.supplier-modal-submit:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.supplier-modal-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

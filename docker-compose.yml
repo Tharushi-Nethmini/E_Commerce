@@ -1,0 +1,141 @@
+# E-Commerce Microservices - Docker Compose Configuration
+# Next.js Frontend + Node.js/Express Backend Services
+
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7-jammy
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=ecommerce
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # User Service
+  user-service:
+    build:
+      context: ./backend/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/user-service
+      - JWT_SECRET=your-production-jwt-secret-change-this
+      - JWT_EXPIRES_IN=7d
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - ecommerce-network
+
+  # Inventory Service
+  inventory-service:
+    build:
+      context: ./backend/inventory-service
+      dockerfile: Dockerfile
+    container_name: inventory-service
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/inventory-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - ecommerce-network
+
+  # Payment Service
+  payment-service:
+    build:
+      context: ./backend/payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    ports:
+      - "8083:8083"
+    environment:
+      - PORT=8083
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/payment-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - ecommerce-network
+
+  # Order Service (Orchestrator)
+  order-service:
+    build:
+      context: ./backend/order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/order-service
+      - USER_SERVICE_URL=http://user-service:8081
+      - INVENTORY_SERVICE_URL=http://inventory-service:8082
+      - PAYMENT_SERVICE_URL=http://payment-service:8083
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      inventory-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+    restart: on-failure
+    networks:
+      - ecommerce-network
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_USER_SERVICE=http://localhost:8081
+      - NEXT_PUBLIC_API_INVENTORY_SERVICE=http://localhost:8082
+      - NEXT_PUBLIC_API_ORDER_SERVICE=http://localhost:8080
+      - NEXT_PUBLIC_API_PAYMENT_SERVICE=http://localhost:8083
+    depends_on:
+      - user-service
+      - inventory-service
+      - payment-service
+      - order-service
+    restart: on-failure
+    networks:
+      - ecommerce-network
+
+networks:
+  ecommerce-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
