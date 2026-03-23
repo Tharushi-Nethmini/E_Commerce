@@ -1,7 +1,18 @@
-
 const inventoryService = require('../services/inventoryService');
 
 class InventoryController {
+  // Delete a restock request (admin)
+  async deleteRestockRequest(req, res) {
+    try {
+      const requestId = req.params.id;
+      const allRequests = await require('../models/RestockRequest').find({}, '_id');
+      console.log('Attempting to delete restock request with ID:', requestId);
+      await inventoryService.deleteRestockRequest(requestId);
+      res.status(200).json({ message: 'Restock request deleted successfully' });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
   // Get only paid restock requests (for admin payments)
   async getPaidRestockRequests(req, res) {
     try {

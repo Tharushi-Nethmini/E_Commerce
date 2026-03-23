@@ -6,6 +6,9 @@ const { validateProduct, validateStockCheck } = require('../middleware/validatio
 const { upload } = require('../config/cloudinary');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
+// Delete a restock request (admin)
+router.delete('/restock-requests/:id', /* authenticateToken, authorizeRoles('ADMIN'), */ inventoryController.deleteRestockRequest);
+
 // Mark a fulfilled restock request as paid (admin)
 router.patch('/restock-requests/:id/pay', /* authenticateToken, authorizeRoles('ADMIN'), */ inventoryController.payRestockRequest);
 // Get only fulfilled restock requests (for admin payments)

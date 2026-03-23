@@ -6,18 +6,21 @@ import { useAuth } from '@/context/AuthContext'
 import '@/styles/payments.css'
 import { FaMoneyCheckAlt } from 'react-icons/fa';
 import { FaTrash } from 'react-icons/fa';
-  // Handler for deleting a restock request
-  const handleDeleteRestock = async (restockId) => {
-    if (!confirm('Are you sure you want to delete this restock request?')) return;
-    try {
-      await api.delete(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/${restockId}`);
-      setRestockPayments(prev => prev.filter(r => r._id !== restockId));
-    } catch (err) {
-      alert('Failed to delete restock request.');
-    }
-  };
+
 
 function PaymentsPage() {
+    // Handler for deleting a restock request
+    const handleDeleteRestock = async (restockId) => {
+      if (!confirm('Are you sure you want to delete this restock request?')) return;
+      try {
+        await api.delete(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/${restockId}`);
+        setRestockPayments(prev => prev.filter(r => r._id !== restockId));
+        // Optionally show a success message here
+      } catch (err) {
+        console.error('Delete restock error:', err);
+        alert('Failed to delete restock request.');
+      }
+    };
   const [restockPayments, setRestockPayments] = useState([]);
   const [payingRestockId, setPayingRestockId] = useState(null);
   const [payments, setPayments] = useState([])
@@ -307,7 +310,7 @@ function PaymentsPage() {
                     <td className="supplier-col">{req.productId?.supplier || '-'}</td>
                     <td className="requested-col">{new Date(req.createdAt).toLocaleDateString()}</td>
                     <td className="status-col">{req.status}</td>
-                    <td className="action-col" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', justifyContent: 'flex-start', alignItems: 'center' }}>
+                    <td className="action-col" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-start', alignItems: 'center' }}>
                       {payingRestockId === req._id ? (
                         <button className="user-edit-btn" disabled>
                           Paying...

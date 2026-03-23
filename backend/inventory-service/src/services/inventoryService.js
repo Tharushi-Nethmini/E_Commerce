@@ -1,10 +1,15 @@
-
 const RestockRequest = require('../models/RestockRequest');
 const Product = require('../models/Product');
 const { cloudinary } = require('../config/cloudinary');
 const { createLowStockNotification } = require('./notificationService');
 
 class InventoryService {
+  // Delete a restock request by ID
+  async deleteRestockRequest(requestId) {
+    const deleted = await RestockRequest.findByIdAndDelete(requestId);
+    if (!deleted) throw new Error('Restock request not found');
+    return deleted;
+  }
 
   // Admin marks a fulfilled restock request as paid
   async payRestockRequest(requestId) {
