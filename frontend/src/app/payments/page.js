@@ -9,6 +9,19 @@ import { FaTrash } from 'react-icons/fa';
 
 
 function PaymentsPage() {
+      // Handler for deleting a customer payment
+      const handleDeletePayment = async (paymentId) => {
+        console.log('Attempting to delete payment with ID:', paymentId);
+        if (!confirm('Are you sure you want to delete this payment?')) return;
+        try {
+          await api.delete(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/${paymentId}`);
+          setPayments(prev => prev.filter(p => (p._id || p.id) !== paymentId));
+          // Optionally show a success message here
+        } catch (err) {
+          console.error('Delete payment error:', err);
+          alert('Failed to delete payment.');
+        }
+      };
     // Handler for deleting a restock request
     const handleDeleteRestock = async (restockId) => {
       if (!confirm('Are you sure you want to delete this restock request?')) return;
@@ -386,90 +399,105 @@ function PaymentsPage() {
         </div>
 
         <div className="payments-list">
-          {filteredPayments.map((payment) => (
-            <div key={payment._id || payment.id} className="payment-card">
-              <div className="payment-header">
-                <div className="payment-header-info">
-                  <div className="payment-title-row">
-                    <h3 className="payment-id">Payment #{payment._id || payment.id}</h3>
-                    <span className={`payment-status-badge ${getStatusColor(payment.status)}`}>
-                      {payment.status}
-                    </span>
-                  </div>
-                  <div className="payment-details-grid">
-                    <p className="payment-detail-item"><span className="payment-detail-label">Order ID:</span> {payment.orderId}</p>
-                    <p className="payment-detail-item"><span className="payment-detail-label">Amount:</span> <span className="payment-amount">Rs. {payment.amount?.toFixed(2) || '0.00'}</span></p>
-                    <p className="payment-detail-item"><span className="payment-detail-label">Method:</span> {payment.paymentMethod}</p>
-                    <p className="payment-detail-item"><span className="payment-detail-label">Transaction ID:</span> {payment.transactionId || 'N/A'}</p>
-                    <p className="payment-detail-item"><span className="payment-detail-label">Created:</span> {new Date(payment.createdAt).toLocaleString()}</p>
-                    {payment.processedAt && (
-                      <p className="payment-detail-item"><span className="payment-detail-label">Processed:</span> {new Date(payment.processedAt).toLocaleString()}</p>
-                    )}
+          {filteredPayments.map((payment) => {
+            console.log('Rendering payment card with _id:', payment._id, 'id:', payment.id, 'transactionId:', payment.transactionId);
+            return (
+              <div key={payment._id || payment.id} className="payment-card">
+                <div className="payment-header">
+                  <div className="payment-header-info">
+                    <div className="payment-title-row">
+                      <h3 className="payment-id">Payment #{payment._id || payment.id}</h3>
+                      <span className={`payment-status-badge ${getStatusColor(payment.status)}`}>
+                        {payment.status}
+                      </span>
+                    </div>
+                    <div className="payment-details-grid">
+                      <p className="payment-detail-item"><span className="payment-detail-label">Order ID:</span> {payment.orderId}</p>
+                      <p className="payment-detail-item"><span className="payment-detail-label">Amount:</span> <span className="payment-amount">Rs. {payment.amount?.toFixed(2) || '0.00'}</span></p>
+                      <p className="payment-detail-item"><span className="payment-detail-label">Method:</span> {payment.paymentMethod}</p>
+                      <p className="payment-detail-item"><span className="payment-detail-label">Transaction ID:</span> {payment.transactionId || 'N/A'}</p>
+                      <p className="payment-detail-item"><span className="payment-detail-label">Created:</span> {new Date(payment.createdAt).toLocaleString()}</p>
+                      {payment.processedAt && (
+                        <p className="payment-detail-item"><span className="payment-detail-label">Processed:</span> {new Date(payment.processedAt).toLocaleString()}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
+
+                {/* Admin: refund button for completed payments */}
+                {/* Admin: Delete button for any payment */}
+                {isAdmin && (
+                  <div className="payment-admin-actions">
+                    <button
+                      onClick={() => handleDeletePayment(payment._id || payment.id)}
+                      className="payment-delete-btn"
+                      style={{ marginRight: 8 }}
+                    >
+                      <FaTrash /> Delete
+                    </button>
+                  </div>
+                )}
+                {isAdmin && payment.status === 'COMPLETED' && (
+                  <div className="payment-admin-actions">
+                    <button
+                      onClick={() => handleRefund(payment._id || payment.id)}
+                      disabled={refunding === (payment._id || payment.id)}
+                      className="payment-refund-btn"
+                    >
+                      {refunding === (payment._id || payment.id) ? 'Refunding...' : 'Refund Payment'}
+                    </button>
+                  </div>
+                )}
+
+                {['COMPLETED', 'REFUNDED'].includes(payment.status) && (
+                  <div className="payment-admin-actions">
+                    <button
+                      onClick={() => handleGenerateInvoice(payment._id || payment.id)}
+                      disabled={invoicing === (payment._id || payment.id)}
+                      className="payment-invoice-btn"
+                    >
+                      {invoicing === (payment._id || payment.id) ? 'Generating Invoice...' : 'Generate Invoice'}
+                    </button>
+                  </div>
+                )}
+
+                {invoiceByPaymentId[payment._id || payment.id] && (
+                  <div className="payment-invoice-panel">
+                    <div className="payment-invoice-header">
+                      <h4 className="payment-invoice-title">Invoice Summary</h4>
+                      <span className="payment-invoice-number">
+                        {invoiceByPaymentId[payment._id || payment.id].invoiceNumber}
+                      </span>
+                    </div>
+                    <div className="payment-invoice-row">
+                      <span className="payment-invoice-label">Generated</span>
+                      <span className="payment-invoice-value">
+                        {new Date(invoiceByPaymentId[payment._id || payment.id].generatedAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="payment-invoice-row">
+                      <span className="payment-invoice-label">Gross Amount</span>
+                      <span className="payment-invoice-value">
+                        Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.grossAmount?.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="payment-invoice-row">
+                      <span className="payment-invoice-label">Refund Amount</span>
+                      <span className="payment-invoice-value">
+                        Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.refundAmount?.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="payment-invoice-row payment-invoice-net-row">
+                      <span className="payment-invoice-label">Net Amount</span>
+                      <span className="payment-invoice-value payment-invoice-net-value">
+                        Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.netAmount?.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {/* Admin: refund button for completed payments */}
-              {isAdmin && payment.status === 'COMPLETED' && (
-                <div className="payment-admin-actions">
-                  <button
-                    onClick={() => handleRefund(payment._id || payment.id)}
-                    disabled={refunding === (payment._id || payment.id)}
-                    className="payment-refund-btn"
-                  >
-                    {refunding === (payment._id || payment.id) ? 'Refunding...' : 'Refund Payment'}
-                  </button>
-                </div>
-              )}
-
-              {['COMPLETED', 'REFUNDED'].includes(payment.status) && (
-                <div className="payment-admin-actions">
-                  <button
-                    onClick={() => handleGenerateInvoice(payment._id || payment.id)}
-                    disabled={invoicing === (payment._id || payment.id)}
-                    className="payment-invoice-btn"
-                  >
-                    {invoicing === (payment._id || payment.id) ? 'Generating Invoice...' : 'Generate Invoice'}
-                  </button>
-                </div>
-              )}
-
-              {invoiceByPaymentId[payment._id || payment.id] && (
-                <div className="payment-invoice-panel">
-                  <div className="payment-invoice-header">
-                    <h4 className="payment-invoice-title">Invoice Summary</h4>
-                    <span className="payment-invoice-number">
-                      {invoiceByPaymentId[payment._id || payment.id].invoiceNumber}
-                    </span>
-                  </div>
-                  <div className="payment-invoice-row">
-                    <span className="payment-invoice-label">Generated</span>
-                    <span className="payment-invoice-value">
-                      {new Date(invoiceByPaymentId[payment._id || payment.id].generatedAt).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="payment-invoice-row">
-                    <span className="payment-invoice-label">Gross Amount</span>
-                    <span className="payment-invoice-value">
-                      Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.grossAmount?.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="payment-invoice-row">
-                    <span className="payment-invoice-label">Refund Amount</span>
-                    <span className="payment-invoice-value">
-                      Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.refundAmount?.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="payment-invoice-row payment-invoice-net-row">
-                    <span className="payment-invoice-label">Net Amount</span>
-                    <span className="payment-invoice-value payment-invoice-net-value">
-                      Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.netAmount?.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
 
           {payments.length === 0 && (
             <div className="payments-empty">

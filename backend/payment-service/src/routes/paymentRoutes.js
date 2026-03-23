@@ -336,4 +336,24 @@ router.get('/:id/invoice', paymentController.generateInvoice);
  */
 router.post('/status', paymentController.getPaymentStatus);
 
+/**
+ * @swagger
+ * /api/payments/{id}:
+ *   delete:
+ *     summary: Delete a payment by ID
+ *     tags: [Payments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Payment deleted
+ *       404:
+ *         description: Payment not found
+ */
+router.delete('/:id', paymentController.deletePayment);
+
 module.exports = router;

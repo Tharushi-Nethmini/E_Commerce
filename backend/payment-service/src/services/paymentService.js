@@ -2,7 +2,28 @@ const Payment = require('../models/Payment');
 const PaymentMethod = require('../models/PaymentMethod');
 const { v4: uuidv4 } = require('uuid');
 
+
+// ...existing code...
+
+// Add this method to the main PaymentService class body below all other methods:
+//   async deletePayment(paymentId) { ... }
+
+// Remove the duplicate class definition and export only once at the end:
+// module.exports = new PaymentService();
+
 class PaymentService {
+    // Delete payment by ID
+    async deletePayment(paymentId) {
+      const deletedPayment = await Payment.findByIdAndDelete(paymentId);
+      if (!deletedPayment) {
+        throw new Error('Payment not found');
+      }
+      return {
+        success: true,
+        message: 'Payment deleted successfully',
+        paymentId
+      };
+    }
   // Process payment (called by Order Service)
   async processPayment(paymentData) {
     try {
@@ -50,26 +71,10 @@ class PaymentService {
   async simulatePaymentGateway(payment) {
     return new Promise((resolve) => {
       setTimeout(() => {
-        // 90% success rate for simulation
-        const success = Math.random() > 0.1;
-        
-        if (success) {
-          resolve({
-            success: true,
-            transactionId: `TXN-${uuidv4()}`
-          });
-        } else {
-          const reasons = [
-            'Insufficient funds',
-            'Card declined',
-            'Payment gateway timeout',
-            'Invalid card details'
-          ];
-          resolve({
-            success: false,
-            reason: reasons[Math.floor(Math.random() * reasons.length)]
-          });
-        }
+        resolve({
+          success: true,
+          transactionId: `TXN-${uuidv4()}`
+        });
       }, 1000); // Simulate processing delay
     });
   }
