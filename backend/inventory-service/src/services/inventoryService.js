@@ -1,8 +1,53 @@
+
+const RestockRequest = require('../models/RestockRequest');
 const Product = require('../models/Product');
 const { cloudinary } = require('../config/cloudinary');
 const { createLowStockNotification } = require('./notificationService');
 
 class InventoryService {
+
+  // Admin marks a fulfilled restock request as paid
+  async payRestockRequest(requestId) {
+    const request = await RestockRequest.findById(requestId);
+    if (!request) throw new Error('Restock request not found');
+    if (request.status !== 'FULFILLED') throw new Error('Only fulfilled requests can be paid');
+    request.status = 'PAID';
+    await request.save();
+    return request;
+  }
+
+      // Supplier fulfills a restock request
+      async fulfillRestockRequest(requestId, supplierId) {
+        const request = await RestockRequest.findById(requestId).populate('productId');
+        if (!request) throw new Error('Restock request not found');
+        if (request.status !== 'PENDING') throw new Error('Request is not pending');
+        // Optionally: check supplier owns the product
+        if (supplierId && request.productId && request.productId.supplier && String(request.productId.supplier) !== String(supplierId)) {
+          throw new Error('You do not have permission to fulfill this request');
+        }
+        request.status = 'FULFILLED';
+        await request.save();
+        return request;
+      }
+    // Get all restock requests, optionally filtered by supplier
+    async getRestockRequests({ supplierId, status } = {}) {
+      const filter = {};
+      if (supplierId) {
+        const products = await Product.find({ supplier: supplierId }, '_id');
+        filter.productId = { $in: products.map(p => p._id) };
+      }
+      if (status) filter.status = status;
+      return await RestockRequest.find(filter).populate('productId').sort({ createdAt: -1 });
+    }
+  // Create a restock request (admin)
+  async createRestockRequest({ productId, quantity, requestedBy }) {
+    if (!productId || !quantity) {
+      throw new Error('Product and quantity are required');
+    }
+    const restockRequest = new RestockRequest({ productId, quantity, requestedBy });
+    await restockRequest.save();
+    return restockRequest;
+  }
       // Approve product (set status to ACTIVE)
       async approveProduct(productId) {
         const product = await Product.findById(productId);

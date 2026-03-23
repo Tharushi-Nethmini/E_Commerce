@@ -72,116 +72,37 @@ function AnalyticsPage() {
   }
 
   // Submit order request function with proper API integration
-  const submitOrderRequest = async () => {
-    // Reset error
-    setOrderError('')
+    const submitOrderRequest = async () => {
+      // Reset error
+      setOrderError('')
     
-    // Validate quantity
-    let qty = parseInt(orderQuantity, 10)
-    if (isNaN(qty) || qty < 1) {
-      setOrderError('Please enter a valid quantity (minimum 1).')
-      return
-    }
-    
-    // Validate product
-    if (!selectedProduct) {
-      setOrderError('Please select a product.')
-      return
-    }
-    
-    // Validate user
-    if (!user) {
-      setOrderError('You must be logged in to submit a request.')
-      return
-    }
-    
-    if (!user._id && !user.id) {
-      setOrderError('User ID not found. Please log out and log in again.')
-      return
-    }
-    
-    setSubmitting(true)
-    
-    try {
-      // Use the correct user ID field (check if your user object uses _id or id)
-      const userId = user._id || user.id
-      
-      // Prepare the order data based on common order schema
-      // Adjust these fields based on your actual order service requirements
-      const orderData = {
-        userId: userId,
-        productId: selectedProduct._id,
-        quantity: qty,
-        // If your order requires price, add it
-        price: selectedProduct.price,
-        totalAmount: selectedProduct.price * qty,
-        // Payment method
-        paymentMethod: 'CASH_ON_DELIVERY',
-        // Order type to distinguish restock orders
-        orderType: 'RESTOCK',
-        // Status
-        status: 'PENDING',
-        // Additional metadata
-        notes: `Restock request for ${selectedProduct.name} - Current stock: ${selectedProduct.quantity}`
+      // Validate quantity
+      let qty = 1;
+      if (typeof orderQuantity === 'string' && orderQuantity.trim() !== '' && !isNaN(Number(orderQuantity))) {
+        qty = Math.max(1, parseInt(orderQuantity, 10));
       }
-      
-      console.log('Submitting order request with data:', orderData)
-      
-      const response = await api.post(
-        `${process.env.NEXT_PUBLIC_API_ORDER_SERVICE}/api/orders`,
-        orderData
-      )
-      
-      console.log('Order request successful:', response.data)
-      
-      // Close modal and show success
-      setShowRequestModal(false)
-      setOrderQuantity('1')
-      setSelectedProduct(null)
-      alert('Stock request submitted successfully!')
-      
-      // Refresh stats to update low stock products
-      await fetchAllStats()
-      
-    } catch (err) {
-      console.error('Order request failed:', err)
-      
-      // Enhanced error handling
-      if (err.response) {
-        // The request was made and the server responded with a status code
-        console.error('Error status:', err.response.status)
-        console.error('Error headers:', err.response.headers)
-        console.error('Error data:', err.response.data)
-        
-        // Extract error message from response
-        let errorMessage = 'Unknown error'
-        if (typeof err.response.data === 'string') {
-          errorMessage = err.response.data
-        } else if (err.response.data?.message) {
-          errorMessage = err.response.data.message
-        } else if (err.response.data?.error) {
-          errorMessage = err.response.data.error
-        } else if (err.response.data?.errors) {
-          errorMessage = JSON.stringify(err.response.data.errors)
-        }
-        
-        setOrderError(`Failed to submit: ${errorMessage}`)
-        
-        // If it's a validation error, show more details
-        if (err.response.status === 400) {
-          setOrderError(`Validation Error: ${errorMessage}\n\nPlease check if all required fields are provided.`)
-        }
-      } else if (err.request) {
-        // The request was made but no response was received
-        setOrderError('No response from server. Please check your connection and if the order service is running.')
-        console.error('No response received:', err.request)
-      } else {
-        // Something happened in setting up the request
-        setOrderError(`Error: ${err.message}`)
+      if (!qty || isNaN(qty) || qty < 1) {
+        setOrderError('Please enter a valid quantity.');
+        return;
       }
-    } finally {
-      setSubmitting(false)
-    }
+      if (!selectedProduct) {
+        setOrderError('Please select a product.');
+        return;
+      }
+      setSubmitting(true);
+      try {
+        // Use the new restock-request endpoint for admin restock
+        await api.post(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-request`, {
+          productId: selectedProduct._id,
+          quantity: qty
+        });
+        setShowRequestModal(false);
+        alert('Restock request submitted!');
+      } catch (err) {
+        setOrderError(err?.response?.data?.message || 'Failed to submit restock request.');
+      } finally {
+        setSubmitting(false);
+      }
   }
 
   const STATUS_COLORS = {

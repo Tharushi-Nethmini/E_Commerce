@@ -1,22 +1,29 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import '@/styles/users.css';
+import { FaCheck } from 'react-icons/fa';
+
 
 export default function SupplierOrdersPage() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  const [restockRequests, setRestockRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
   useEffect(() => {
     if (user && user.role === "SUPPLIER") {
-      fetchOrdersAndProducts();
+      fetchOrdersProductsAndRestocks();
     }
   }, [user]);
 
-  const fetchOrdersAndProducts = async () => {
+
+  const fetchOrdersProductsAndRestocks = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -30,52 +37,84 @@ export default function SupplierOrdersPage() {
       const supplierProductIds = new Set(supplierProducts.map(p => p._id));
       const supplierOrders = orderRes.data.filter(o => supplierProductIds.has(o.productId));
       setOrders(supplierOrders);
+
+      // Fetch restock requests for this supplier
+      const restockRes = await api.get(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests`);
+      setRestockRequests(restockRes.data);
     } catch (err) {
-      setError("Failed to load orders");
+      setError("Failed to load orders or restock requests");
     }
     setLoading(false);
   };
 
+  // Handler for supplier to fulfill restock request
+  const handleRestock = async (requestId) => {
+    if (!confirm('Mark this restock request as fulfilled?')) return;
+    try {
+      await api.patch(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/${requestId}/fulfill`);
+      // Refresh list
+      fetchOrdersProductsAndRestocks();
+    } catch (err) {
+      alert('Failed to fulfill restock request.');
+    }
+  };
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Manage Orders</h1>
-      {loading ? (
-        <p>Loading orders...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : orders.length === 0 ? (
-        <p className="text-gray-600">No orders found for your products.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200">
+      <h1 className="users-title mb-6">Admin Restock Requests</h1>
+      <div className="users-table-container">
+        {loading ? (
+          <div className="users-loading">Loading restock requests...</div>
+        ) : error ? (
+          <div className="text-red-500">{error}</div>
+        ) : restockRequests.length === 0 ? (
+          <div className="users-empty">No restock requests for your products.</div>
+        ) : (
+          <table className="users-table">
             <thead>
               <tr>
-                <th className="px-4 py-2 border">Order ID</th>
-                <th className="px-4 py-2 border">Product</th>
-                <th className="px-4 py-2 border">Quantity</th>
-                <th className="px-4 py-2 border">Total</th>
-                <th className="px-4 py-2 border">Status</th>
-                <th className="px-4 py-2 border">Date</th>
+                <th>Request ID</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Requested At</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {orders.map(order => {
-                const product = products.find(p => p._id === order.productId);
-                return (
-                  <tr key={order._id}>
-                    <td className="px-4 py-2 border">{order._id.slice(-8)}</td>
-                    <td className="px-4 py-2 border">{product ? product.name : order.productId}</td>
-                    <td className="px-4 py-2 border">{order.quantity}</td>
-                    <td className="px-4 py-2 border">Rs. {order.totalAmount?.toFixed(2)}</td>
-                    <td className="px-4 py-2 border">{order.status}</td>
-                    <td className="px-4 py-2 border">{new Date(order.createdAt).toLocaleString()}</td>
-                  </tr>
-                );
-              })}
+              {restockRequests.map(req => (
+                <tr key={req._id}>
+                  <td>{req._id.slice(-8)}</td>
+                  <td>{req.productId?.name || (req.productId?._id || req.productId)}</td>
+                  <td>{req.quantity}</td>
+                  <td>{req.status}</td>
+                  <td>{new Date(req.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    {req.status === 'PENDING' ? (
+                      <button
+                        className="user-edit-btn"
+                        title="Mark as Fulfilled"
+                        onClick={() => handleRestock(req._id)}
+                      >
+                        <FaCheck /> Restock
+                      </button>
+                    ) : req.status === 'FULFILLED' ? (
+                      <button
+                        className="user-edit-btn"
+                        style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                        disabled
+                        title="Restocked"
+                      >
+                        <FaCheck /> Restocked
+                      </button>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,79 @@
+
 const inventoryService = require('../services/inventoryService');
 
 class InventoryController {
+  // Get only paid restock requests (for admin payments)
+  async getPaidRestockRequests(req, res) {
+    try {
+      const paid = await inventoryService.getRestockRequests({ status: 'PAID' });
+      res.status(200).json(paid);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  // Admin marks a fulfilled restock request as paid
+  async payRestockRequest(req, res) {
+    try {
+      const requestId = req.params.id;
+      const updated = await inventoryService.payRestockRequest(requestId);
+      res.status(200).json({ message: 'Restock request marked as paid', restockRequest: updated });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
+  // Get only fulfilled restock requests (for admin payments)
+  async getFulfilledRestockRequests(req, res) {
+    try {
+      const fulfilled = await inventoryService.getRestockRequests({ status: 'FULFILLED' });
+      res.status(200).json(fulfilled);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  // Supplier fulfills a restock request
+  async fulfillRestockRequest(req, res) {
+    try {
+      const requestId = req.params.id;
+      const user = req.user;
+      // Optionally: check if supplier owns the product in the request
+      const updated = await inventoryService.fulfillRestockRequest(requestId, user ? user.userId : null);
+      res.status(200).json({ message: 'Restock request fulfilled', restockRequest: updated });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
+    // Get restock requests (admin: all, supplier: only their products)
+    async getRestockRequests(req, res) {
+      try {
+        let supplierId = null;
+        if (req.user && req.user.role === 'SUPPLIER') {
+          supplierId = req.user.userId;
+        }
+        const restockRequests = await inventoryService.getRestockRequests({ supplierId });
+        res.status(200).json(restockRequests);
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    }
+  // Admin restock request
+  async createRestockRequest(req, res) {
+    try {
+      const { productId, quantity } = req.body;
+      if (!productId || !quantity) {
+        return res.status(400).json({ message: 'Product and quantity are required' });
+      }
+      // Use req.user if you want to track who requested
+      const requestedBy = req.user ? req.user.userId : null;
+      const restockRequest = await inventoryService.createRestockRequest({ productId, quantity, requestedBy });
+      res.status(201).json({ message: 'Restock request submitted', restockRequest });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
   // Approve product (admin only)
   async approveProduct(req, res) {
     try {

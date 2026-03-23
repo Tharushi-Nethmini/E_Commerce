@@ -1,0 +1,68 @@
+.supplier-orders-table-container {
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  overflow-x: auto;
+  margin-bottom: 2rem;
+}
+
+.supplier-orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.supplier-orders-table thead tr {
+  border-bottom: 2px solid #F3F4F6;
+}
+
+.supplier-orders-table th {
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #9CA3AF;
+  background: #FAFAFA;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.supplier-orders-table tbody tr {
+  border-bottom: 1px solid #F3F4F6;
+  transition: background 0.15s;
+}
+
+.supplier-orders-table tbody tr:hover {
+  background: #F9FAFB;
+}
+
+.supplier-orders-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.supplier-orders-table td {
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.supplier-orders-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.5px;
+  margin-bottom: 1.5rem;
+}
+
+.supplier-orders-loading {
+  text-align: center;
+  padding: 3rem;
+  color: #6B7280;
+}
+
+.supplier-orders-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #9CA3AF;
+  font-size: 0.9375rem;
+}

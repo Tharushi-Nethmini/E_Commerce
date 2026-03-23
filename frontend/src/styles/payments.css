@@ -1,3 +1,349 @@
+.users-table th.action-col, .users-table td.action-col {
+  min-width: 340px;
+  max-width: 480px;
+  white-space: nowrap;
+}
+.user-delete-btn {
+  min-width: 60px;
+  margin-left: 0;
+}
+.user-delete-btn {
+  padding: 0.22rem 0.55rem;
+  border-radius: 1.2rem;
+  border: 1.5px solid #ef4444;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.18rem;
+  transition: background 0.2s, color 0.2s;
+}
+.user-delete-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #dc2626;
+}
+.users-table th.quantity-col {
+  min-width: 120px !important;
+  max-width: 140px !important;
+  white-space: nowrap !important;
+}
+.users-table th.requestid-col {
+  min-width: 120px !important;
+  max-width: 140px !important;
+  white-space: nowrap !important;
+}
+.users-table td.requestid-col {
+  min-width: 90px;
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.users-table th.product-col, .users-table td.product-col {
+  width: 130px;
+  min-width: 100px;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.users-table th.quantity-col, .users-table td.quantity-col {
+  min-width: 70px;
+  text-align: center;
+  white-space: normal;
+  overflow: visible;
+}
+
+.users-table th.supplier-col, .users-table td.supplier-col {
+  min-width: 180px;
+  max-width: 320px;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+.users-table-container {
+  background: #F9FAFB;
+.users-table th.supplier-col, .users-table td.supplier-col {
+  min-width: 110px;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+  border-radius: 1.25rem;
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  border: 1px solid #E5E7EB;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+.users-table th.requested-col, .users-table td.requested-col {
+.users-table th.requested-col, .users-table td.requested-col {
+  min-width: 90px;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.users-table td {
+  font-size: 1.01rem;
+  color: #374151;
+  border-bottom: 1px solid #F1F5F9;
+  background: white;
+  transition: background 0.2s;
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.users-table tbody tr:nth-child(even) td {
+  background: #F8FAFC;
+}
+
+.users-table tbody tr:hover td {
+  background: #EEF2FF;
+}
+
+.users-table th:first-child, .users-table td:first-child {
+  border-top-left-radius: 0.75rem;
+}
+.users-table th:last-child, .users-table td:last-child {
+  border-top-right-radius: 0.75rem;
+}
+
+/* Improved empty state for supplier payments */
+.payments-empty {
+  text-align: center;
+  padding: 3.5rem 1rem;
+  color: #94a3b8;
+  background: #fff;
+  border: 1.5px dashed #E5E7EB;
+  border-radius: 1rem;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  margin-top: 0.5rem;
+}
+.user-success-btn {
+  padding: 0.28rem 0.7rem;
+  border-radius: 1.2rem;
+  border: 1.5px solid #22c55e;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+/* Professional Supplier Payments Table Enhancements */
+.users-table-container {
+  background: #F9FAFB;
+  border-radius: 1.25rem;
+  padding: 2rem 2rem 1.25rem 2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  border: 1px solid #E5E7EB;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.users-table th, .users-table td {
+  padding: 0.85rem 1.1rem;
+  text-align: left;
+}
+
+.users-table th {
+  background: #F3F4F6;
+  color: #1E293B;
+  font-size: 1rem;
+  font-weight: 800;
+  border-bottom: 2px solid #E5E7EB;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.users-table td {
+  font-size: 1rem;
+  color: #374151;
+  border-bottom: 1px solid #F1F5F9;
+  background: white;
+  transition: background 0.2s;
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.users-table tbody tr:nth-child(even) td {
+  background: #F8FAFC;
+}
+
+.users-table tbody tr:hover td {
+  background: #EEF2FF;
+}
+
+.users-table th:first-child, .users-table td:first-child {
+  border-top-left-radius: 0.75rem;
+}
+.users-table th:last-child, .users-table td:last-child {
+  border-top-right-radius: 0.75rem;
+}
+/* Status and Action column tweaks for supplier payments table */
+.users-table th.status-col, .users-table td.status-col {
+  width: 90px;
+  min-width: 70px;
+  max-width: 100px;
+  text-align: center;
+}
+
+.users-table th.action-col, .users-table td.action-col {
+  width: 90px;
+  min-width: 70px;
+  max-width: 100px;
+  text-align: center;
+}
+/* Supplier Payments Table Column Tweaks */
+.users-table th.quantity-col, .users-table td.quantity-col {
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.users-table th.supplier-col, .users-table td.supplier-col {
+  min-width: 180px;
+  max-width: 340px;
+  white-space: pre-line;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.users-table th.requested-col, .users-table td.requested-col {
+  min-width: 140px;
+  max-width: 180px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Section Headers and Descriptions for Payments Page */
+.payments-section {
+  margin-bottom: 2.5rem;
+}
+
+.users-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1E293B;
+  margin-bottom: 0.25rem;
+}
+
+.payments-section-desc {
+  font-size: 0.97rem;
+  color: #64748B;
+  margin-bottom: 1.1rem;
+}
+
+/* Supplier Payments Table */
+.users-table-container {
+  background: #F9FAFB;
+  border-radius: 1rem;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.users-table th, .users-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.users-table th {
+  background: #F3F4F6;
+  color: #374151;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-bottom: 1.5px solid #E5E7EB;
+}
+
+.users-table td {
+  font-size: 0.97rem;
+  color: #374151;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.user-edit-btn {
+  padding: 0.22rem 0.55rem;
+  border-radius: 1.2rem;
+  border: 1.5px solid #6366F1;
+  background: #EEF2FF;
+  color: #3730A3;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.18rem;
+}
+
+.user-edit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.user-edit-btn:hover:not(:disabled) {
+  background: #C7D2FE;
+  color: #312E81;
+  border-color: #4F46E5;
+}
 /* Payments Page Styles */
 
 .payments-header {
@@ -101,11 +447,11 @@
   letter-spacing: 0.5px;
 }
 
-.payment-amount {
-  font-size: 1.125rem;
-  font-weight: 800;
-  color: #059669;
+.users-table th, .users-table td {
+  padding: 0.85rem 0.5rem;
+  text-align: left;
 }
+
 
 /* Admin refund */
 .payment-admin-actions {

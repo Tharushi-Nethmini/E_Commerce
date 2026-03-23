@@ -4,8 +4,22 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import api from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import '@/styles/payments.css'
+import { FaMoneyCheckAlt } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
+  // Handler for deleting a restock request
+  const handleDeleteRestock = async (restockId) => {
+    if (!confirm('Are you sure you want to delete this restock request?')) return;
+    try {
+      await api.delete(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/${restockId}`);
+      setRestockPayments(prev => prev.filter(r => r._id !== restockId));
+    } catch (err) {
+      alert('Failed to delete restock request.');
+    }
+  };
 
 function PaymentsPage() {
+  const [restockPayments, setRestockPayments] = useState([]);
+  const [payingRestockId, setPayingRestockId] = useState(null);
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [refunding, setRefunding] = useState(null)
@@ -114,6 +128,22 @@ function PaymentsPage() {
     }
   }, [userId])
 
+  // Fetch supplier payments (fulfilled restock requests)
+  // Fetch both FULFILLED and PAID restock requests for supplier payments
+  const fetchSupplierPayments = useCallback(() => {
+    if (isAdmin) {
+      // Fetch both statuses in parallel and merge
+      Promise.all([
+        api.get(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/fulfilled`).then(res => res.data || []).catch(() => []),
+        api.get(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/paid`).then(res => res.data || []).catch(() => [])
+      ]).then(([fulfilled, paid]) => {
+        // Combine and sort by createdAt descending
+        const all = [...fulfilled, ...paid].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setRestockPayments(all);
+      }).catch(() => setRestockPayments([]));
+    }
+  }, [isAdmin]);
+
   useEffect(() => {
     if (!user) {
       setLoading(false)
@@ -122,196 +152,34 @@ function PaymentsPage() {
     }
     fetchPayments()
     fetchPaymentMethods()
-  }, [user, fetchPayments, fetchPaymentMethods])
+    fetchSupplierPayments();
+  }, [user, fetchPayments, fetchPaymentMethods, fetchSupplierPayments]);
+  // Handler for admin to "pay" a fulfilled restock request
+  const handlePayRestock = async (restockId) => {
+    if (!confirm('Mark this restock request as paid?')) return;
+    setPayingRestockId(restockId);
+    try {
+      await api.patch(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/${restockId}/pay`);
+      // Refresh supplier payments after paying
+      fetchSupplierPayments();
+    } catch (err) {
+      alert('Failed to mark as paid.');
+    }
+    setPayingRestockId(null);
+  };
 
   const applyHistoryFilters = async () => {
     setLoading(true)
     await fetchPayments()
   }
 
+
   const resetHistoryFilters = async () => {
     setStatusFilter('ALL')
     setStartDate('')
     setEndDate('')
     setLoading(true)
-    try {
-      const response = await api.get(
-        `${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/history?${(!isAdmin && userId) ? `userId=${userId}&` : ''}page=1&limit=100`
-      )
-      setPayments(response.data?.data || [])
-    } catch (error) {
-      console.error('Error resetting payment filters:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleRefund = async (paymentId) => {
-    if (!confirm('Are you sure you want to refund this payment?')) return
-
-    const reason = prompt('Refund reason (optional):') || ''
-    const amountInput = prompt('Refund amount (leave empty for full refund):') || ''
-    const payload = {
-      reason: reason.trim()
-    }
-
-    if (amountInput.trim()) {
-      const parsedAmount = Number(amountInput)
-      if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-        alert('Refund amount must be a positive number')
-        return
-      }
-      payload.amount = parsedAmount
-    }
-
-    setRefunding(paymentId)
-    try {
-      await api.post(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/${paymentId}/refund`, payload)
-      fetchPayments()
-    } catch (error) {
-      alert(error.response?.data?.message || 'Failed to refund payment')
-    } finally {
-      setRefunding(null)
-    }
-  }
-
-  const handleGenerateInvoice = async (paymentId) => {
-    setInvoicing(paymentId)
-    try {
-      const response = await api.get(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/${paymentId}/invoice`)
-      const invoice = response.data
-
-      const { jsPDF } = await import('jspdf')
-      const autoTable = (await import('jspdf-autotable')).default
-
-      const BRAND = [79, 70, 229]
-      const GRAY = [107, 114, 128]
-      const STRIPE = [245, 247, 255]
-
-      const fmt = (amount) =>
-        'Rs. ' + Number(amount || 0).toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        })
-
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const pageW = doc.internal.pageSize.getWidth()
-      const pageH = doc.internal.pageSize.getHeight()
-
-      doc.setFillColor(...BRAND)
-      doc.rect(0, 0, pageW, 30, 'F')
-
-      doc.setTextColor(255, 255, 255)
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(22)
-      doc.text('NexMart', 14, 14)
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(10)
-      doc.text('Payment Invoice', 14, 22)
-      doc.text(
-        `Generated: ${invoice.generatedAt ? new Date(invoice.generatedAt).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' }) : 'N/A'}`,
-        pageW - 14,
-        22,
-        { align: 'right' }
-      )
-
-      let y = 40
-      const section = (title) => {
-        doc.setFont('helvetica', 'bold')
-        doc.setFontSize(11)
-        doc.setTextColor(...BRAND)
-        doc.text(title, 14, y)
-        doc.setDrawColor(...BRAND)
-        doc.setLineWidth(0.3)
-        doc.line(14, y + 1.5, pageW - 14, y + 1.5)
-        y += 7
-      }
-
-      const tableOpts = (head, body) => ({
-        startY: y,
-        head: [head],
-        body,
-        headStyles: { fillColor: BRAND, textColor: 255, fontStyle: 'bold', fontSize: 9 },
-        alternateRowStyles: { fillColor: STRIPE },
-        styles: { fontSize: 9, cellPadding: 3, overflow: 'linebreak' },
-        margin: { left: 14, right: 14 },
-        theme: 'grid'
-      })
-
-      section('1. Invoice Overview')
-      autoTable(doc, {
-        ...tableOpts(
-          ['Field', 'Value'],
-          [
-            ['Invoice Number', invoice.invoiceNumber || 'N/A'],
-            ['Payment ID', invoice.payment?.paymentId || paymentId],
-            ['Order ID', invoice.payment?.orderId || 'N/A'],
-            ['User ID', invoice.payment?.userId || 'N/A'],
-            ['Status', invoice.payment?.status || 'N/A']
-          ]
-        ),
-        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 } }
-      })
-      y = doc.lastAutoTable.finalY + 10
-
-      section('2. Transaction Details')
-      autoTable(doc, {
-        ...tableOpts(
-          ['Transaction ID', 'Payment Method', 'Processed At'],
-          [[
-            invoice.payment?.transactionId || 'N/A',
-            invoice.payment?.paymentMethod || 'N/A',
-            invoice.payment?.processedAt ? new Date(invoice.payment.processedAt).toLocaleString() : 'N/A'
-          ]]
-        )
-      })
-      y = doc.lastAutoTable.finalY + 10
-
-      section('3. Amount Summary')
-      autoTable(doc, {
-        ...tableOpts(
-          ['Description', 'Amount'],
-          [
-            ['Gross Amount', fmt(invoice.summary?.grossAmount)],
-            ['Refund Amount', fmt(invoice.summary?.refundAmount)],
-            ['Net Amount', fmt(invoice.summary?.netAmount)]
-          ]
-        ),
-        columnStyles: {
-          0: { fontStyle: 'bold' },
-          1: { halign: 'right', fontStyle: 'bold' }
-        }
-      })
-
-      doc.setFont('helvetica', 'italic')
-      doc.setFontSize(9)
-      doc.setTextColor(...GRAY)
-      doc.text('Thank you for your payment.', 14, Math.min(doc.lastAutoTable.finalY + 8, pageH - 14))
-
-      const pages = doc.internal.getNumberOfPages()
-      for (let i = 1; i <= pages; i++) {
-        doc.setPage(i)
-        doc.setFontSize(8)
-        doc.setTextColor(...GRAY)
-        doc.text(
-          `NexMart Confidential  ·  Page ${i} of ${pages}`,
-          pageW / 2,
-          pageH - 8,
-          { align: 'center' }
-        )
-      }
-
-      doc.save(`${invoice.invoiceNumber || `invoice-${paymentId}`}.pdf`)
-
-      setInvoiceByPaymentId((prev) => ({
-        ...prev,
-        [paymentId]: invoice
-      }))
-    } catch (error) {
-      alert(error.response?.data?.message || 'Failed to generate invoice')
-    } finally {
-      setInvoicing(null)
-    }
+    await fetchPayments()
   }
 
   const handleAddMethod = async (e) => {
@@ -390,20 +258,21 @@ function PaymentsPage() {
     return colors[status] || 'payment-status-pending'
   }
 
+
   if (loading) {
-    return <div className="payments-loading">Loading payments...</div>
+    return <div className="payments-loading">Loading payments...</div>;
   }
 
   const filteredPayments = payments.filter((p) => {
-    const q = searchQuery.toLowerCase()
+    const q = searchQuery.toLowerCase();
     const matchesSearch = (
       (p._id || p.id)?.toString().toLowerCase().includes(q) ||
       p.orderId?.toString().toLowerCase().includes(q) ||
       p.transactionId?.toString().toLowerCase().includes(q)
-    )
-    const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+    );
+    const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div>
@@ -411,131 +280,200 @@ function PaymentsPage() {
         <h1 className="payments-title">{isAdmin ? 'All Payments' : 'My Payments'}</h1>
       </div>
 
-      <div className="page-search-wrap">
-        <input
-          type="text"
-          className="page-search-input"
-          placeholder="Search by payment ID, order ID, or transaction ID…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <select
-          className="page-filter-select"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="ALL">All Statuses</option>
-          {['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'REFUNDED'].map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        <input
-          type="date"
-          className="page-filter-select"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-        />
-        <input
-          type="date"
-          className="page-filter-select"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-        />
-        <button className="payment-secondary-btn" onClick={applyHistoryFilters}>Apply</button>
-        <button className="payment-secondary-btn" onClick={resetHistoryFilters}>Reset</button>
-      </div>
+      {/* Admin: Supplier Payments Section */}
+      {isAdmin && (
+        <div className="users-table-container mb-8">
+          <h2 className="users-title" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Supplier Payments</h2>
+          <p className="payments-section-desc" style={{ marginBottom: '2.2rem' }}></p>
+          {restockPayments.length > 0 ? (
+            <table className="users-table">
+              <thead>
+                <tr>
+                  <th className="requestid-col">Request ID</th>
+                  <th className="product-col">Product</th>
+                  <th className="quantity-col">Quantity</th>
+                  <th className="supplier-col">Supplier</th>
+                  <th className="requested-col">Requested At</th>
+                  <th className="status-col">Status</th>
+                  <th className="action-col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {restockPayments.map(req => (
+                  <tr key={req._id}>
+                    <td className="requestid-col">{req._id.slice(-8)}</td>
+                    <td className="product-col">{req.productId?.name || (req.productId?._id || req.productId)}</td>
+                    <td className="quantity-col">{req.quantity}</td>
+                    <td className="supplier-col">{req.productId?.supplier || '-'}</td>
+                    <td className="requested-col">{new Date(req.createdAt).toLocaleDateString()}</td>
+                    <td className="status-col">{req.status}</td>
+                    <td className="action-col" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', justifyContent: 'flex-start', alignItems: 'center' }}>
+                      {payingRestockId === req._id ? (
+                        <button className="user-edit-btn" disabled>
+                          Paying...
+                        </button>
+                      ) : req.status === 'PAID' ? (
+                        <button className="user-success-btn" disabled>
+                          Paid
+                        </button>
+                      ) : req.status === 'FULFILLED' ? (
+                        <button
+                          className="user-edit-btn"
+                          onClick={() => handlePayRestock(req._id)}
+                          title="Mark as Paid"
+                        >
+                          <FaMoneyCheckAlt /> Pay
+                        </button>
+                      ) : null}
+                      <button
+                        className="user-delete-btn"
+                        onClick={() => handleDeleteRestock(req._id)}
+                        title="Delete Restock Request"
+                        style={{ marginLeft: 4 }}
+                      >
+                        <FaTrash /> Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="payments-empty">No supplier payments pending.</div>
+          )}
+        </div>
+      )}
 
-      <div className="payments-list">
-        {filteredPayments.map((payment) => (
-          <div key={payment._id || payment.id} className="payment-card">
-            <div className="payment-header">
-              <div className="payment-header-info">
-                <div className="payment-title-row">
-                  <h3 className="payment-id">Payment #{payment._id || payment.id}</h3>
-                  <span className={`payment-status-badge ${getStatusColor(payment.status)}`}>
-                    {payment.status}
-                  </span>
-                </div>
-                <div className="payment-details-grid">
-                  <p className="payment-detail-item"><span className="payment-detail-label">Order ID:</span> {payment.orderId}</p>
-                  <p className="payment-detail-item"><span className="payment-detail-label">Amount:</span> <span className="payment-amount">Rs. {payment.amount?.toFixed(2) || '0.00'}</span></p>
-                  <p className="payment-detail-item"><span className="payment-detail-label">Method:</span> {payment.paymentMethod}</p>
-                  <p className="payment-detail-item"><span className="payment-detail-label">Transaction ID:</span> {payment.transactionId || 'N/A'}</p>
-                  <p className="payment-detail-item"><span className="payment-detail-label">Created:</span> {new Date(payment.createdAt).toLocaleString()}</p>
-                  {payment.processedAt && (
-                    <p className="payment-detail-item"><span className="payment-detail-label">Processed:</span> {new Date(payment.processedAt).toLocaleString()}</p>
-                  )}
+      {/* Customer Payments Section */}
+      <div className="payments-section">
+        <h2 className="users-title" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Customer Payments</h2>
+        
+        <div className="page-search-wrap">
+          <input
+            type="text"
+            className="page-search-input"
+            placeholder="Search by payment ID, order ID, or transaction ID…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <select
+            className="page-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="ALL">All Statuses</option>
+            {['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'REFUNDED'].map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <input
+            type="date"
+            className="page-filter-select"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <input
+            type="date"
+            className="page-filter-select"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+          <button className="payment-secondary-btn" onClick={applyHistoryFilters}>Apply</button>
+          <button className="payment-secondary-btn" onClick={resetHistoryFilters}>Reset</button>
+        </div>
+
+        <div className="payments-list">
+          {filteredPayments.map((payment) => (
+            <div key={payment._id || payment.id} className="payment-card">
+              <div className="payment-header">
+                <div className="payment-header-info">
+                  <div className="payment-title-row">
+                    <h3 className="payment-id">Payment #{payment._id || payment.id}</h3>
+                    <span className={`payment-status-badge ${getStatusColor(payment.status)}`}>
+                      {payment.status}
+                    </span>
+                  </div>
+                  <div className="payment-details-grid">
+                    <p className="payment-detail-item"><span className="payment-detail-label">Order ID:</span> {payment.orderId}</p>
+                    <p className="payment-detail-item"><span className="payment-detail-label">Amount:</span> <span className="payment-amount">Rs. {payment.amount?.toFixed(2) || '0.00'}</span></p>
+                    <p className="payment-detail-item"><span className="payment-detail-label">Method:</span> {payment.paymentMethod}</p>
+                    <p className="payment-detail-item"><span className="payment-detail-label">Transaction ID:</span> {payment.transactionId || 'N/A'}</p>
+                    <p className="payment-detail-item"><span className="payment-detail-label">Created:</span> {new Date(payment.createdAt).toLocaleString()}</p>
+                    {payment.processedAt && (
+                      <p className="payment-detail-item"><span className="payment-detail-label">Processed:</span> {new Date(payment.processedAt).toLocaleString()}</p>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              {/* Admin: refund button for completed payments */}
+              {isAdmin && payment.status === 'COMPLETED' && (
+                <div className="payment-admin-actions">
+                  <button
+                    onClick={() => handleRefund(payment._id || payment.id)}
+                    disabled={refunding === (payment._id || payment.id)}
+                    className="payment-refund-btn"
+                  >
+                    {refunding === (payment._id || payment.id) ? 'Refunding...' : 'Refund Payment'}
+                  </button>
+                </div>
+              )}
+
+              {['COMPLETED', 'REFUNDED'].includes(payment.status) && (
+                <div className="payment-admin-actions">
+                  <button
+                    onClick={() => handleGenerateInvoice(payment._id || payment.id)}
+                    disabled={invoicing === (payment._id || payment.id)}
+                    className="payment-invoice-btn"
+                  >
+                    {invoicing === (payment._id || payment.id) ? 'Generating Invoice...' : 'Generate Invoice'}
+                  </button>
+                </div>
+              )}
+
+              {invoiceByPaymentId[payment._id || payment.id] && (
+                <div className="payment-invoice-panel">
+                  <div className="payment-invoice-header">
+                    <h4 className="payment-invoice-title">Invoice Summary</h4>
+                    <span className="payment-invoice-number">
+                      {invoiceByPaymentId[payment._id || payment.id].invoiceNumber}
+                    </span>
+                  </div>
+                  <div className="payment-invoice-row">
+                    <span className="payment-invoice-label">Generated</span>
+                    <span className="payment-invoice-value">
+                      {new Date(invoiceByPaymentId[payment._id || payment.id].generatedAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="payment-invoice-row">
+                    <span className="payment-invoice-label">Gross Amount</span>
+                    <span className="payment-invoice-value">
+                      Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.grossAmount?.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="payment-invoice-row">
+                    <span className="payment-invoice-label">Refund Amount</span>
+                    <span className="payment-invoice-value">
+                      Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.refundAmount?.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="payment-invoice-row payment-invoice-net-row">
+                    <span className="payment-invoice-label">Net Amount</span>
+                    <span className="payment-invoice-value payment-invoice-net-value">
+                      Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.netAmount?.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
+          ))}
 
-            {/* Admin: refund button for completed payments */}
-            {isAdmin && payment.status === 'COMPLETED' && (
-              <div className="payment-admin-actions">
-                <button
-                  onClick={() => handleRefund(payment._id || payment.id)}
-                  disabled={refunding === (payment._id || payment.id)}
-                  className="payment-refund-btn"
-                >
-                  {refunding === (payment._id || payment.id) ? 'Refunding...' : 'Refund Payment'}
-                </button>
-              </div>
-            )}
-
-            {['COMPLETED', 'REFUNDED'].includes(payment.status) && (
-              <div className="payment-admin-actions">
-                <button
-                  onClick={() => handleGenerateInvoice(payment._id || payment.id)}
-                  disabled={invoicing === (payment._id || payment.id)}
-                  className="payment-invoice-btn"
-                >
-                  {invoicing === (payment._id || payment.id) ? 'Generating Invoice...' : 'Generate Invoice'}
-                </button>
-              </div>
-            )}
-
-            {invoiceByPaymentId[payment._id || payment.id] && (
-              <div className="payment-invoice-panel">
-                <div className="payment-invoice-header">
-                  <h4 className="payment-invoice-title">Invoice Summary</h4>
-                  <span className="payment-invoice-number">
-                    {invoiceByPaymentId[payment._id || payment.id].invoiceNumber}
-                  </span>
-                </div>
-                <div className="payment-invoice-row">
-                  <span className="payment-invoice-label">Generated</span>
-                  <span className="payment-invoice-value">
-                    {new Date(invoiceByPaymentId[payment._id || payment.id].generatedAt).toLocaleString()}
-                  </span>
-                </div>
-                <div className="payment-invoice-row">
-                  <span className="payment-invoice-label">Gross Amount</span>
-                  <span className="payment-invoice-value">
-                    Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.grossAmount?.toFixed(2)}
-                  </span>
-                </div>
-                <div className="payment-invoice-row">
-                  <span className="payment-invoice-label">Refund Amount</span>
-                  <span className="payment-invoice-value">
-                    Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.refundAmount?.toFixed(2)}
-                  </span>
-                </div>
-                <div className="payment-invoice-row payment-invoice-net-row">
-                  <span className="payment-invoice-label">Net Amount</span>
-                  <span className="payment-invoice-value payment-invoice-net-value">
-                    Rs. {invoiceByPaymentId[payment._id || payment.id].summary?.netAmount?.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {payments.length === 0 && (
-          <div className="payments-empty">
-            {isAdmin ? 'No payments found.' : 'No payments found. Place an order to see payments here.'}
-          </div>
-        )}
+          {payments.length === 0 && (
+            <div className="payments-empty">
+              {isAdmin ? 'No payments found.' : 'No payments found. Place an order to see payments here.'}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="payment-methods-section">
