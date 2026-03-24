@@ -25,7 +25,7 @@ export default function SupplierHomePage() {
               Welcome back, {user?.username}!
             </h1>
             <div style={{ fontSize: 18, opacity: 0.95 }}>
-              Here's what's happening with your account today.
+              Here&apos;s what&apos;s happening with your account today.
             </div>
           </div>
           <FaBox size={80} style={{ opacity: 0.15 }} />

@@ -66,7 +66,7 @@ function HomePage() {
             Welcome back, <span>{user?.fullName || user?.username}</span>!
           </h1>
           <p className="home-hero-sub">
-            Here's what's happening with your account today.
+            Here&apos;s what&apos;s happening with your account today.
           </p>
         </div>
         <div className="home-hero-visual">

@@ -1,0 +1,26 @@
+.admin-profile-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 2px 8px #7c3aed11;
+}
+.admin-profile-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+.admin-profile-field {
+  margin-bottom: 16px;
+}
+.admin-profile-label {
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 4px;
+  display: block;
+}
+.admin-profile-value {
+  color: #222;
+  font-size: 16px;
+}

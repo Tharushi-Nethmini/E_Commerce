@@ -1,15 +1,14 @@
-'use client'
+
+"use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
-import { FaUser, FaEnvelope, FaIdBadge, FaLock } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaIdBadge } from 'react-icons/fa';
 import '@/styles/profile.css';
 
-function ProfilePage() {
+export default function SupplierProfilePage() {
   const { user, updateUser } = useAuth();
-  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
@@ -18,44 +17,55 @@ function ProfilePage() {
     fullName: user?.fullName || '',
     email: user?.email || '',
     username: user?.username || '',
+    bankAccountName: user?.bankAccountName || '',
+    bankAccountNumber: user?.bankAccountNumber || '',
+    bankName: user?.bankName || '',
+    bankBranch: user?.bankBranch || '',
     password: '',
     confirmPassword: ''
   });
 
-  // Redirect based on user role
   useEffect(() => {
-    if (user) {
-      if (user.role === 'ADMIN') {
-        router.replace('/admin/profile');
-      } else if (user.role === 'SUPPLIER') {
-        router.replace('/supplier/profile');
-      }
-      // CUSTOMER stays on /profile
+    if (user && user._id) {
+      const fetchProfile = async () => {
+        try {
+          const res = await api.get(`${process.env.NEXT_PUBLIC_API_USER_SERVICE}/api/users/${user._id}`);
+          if (res.data) {
+            updateUser(res.data);
+          }
+        } catch (err) {
+          console.error('Profile fetch error:', err);
+        }
+      };
+      fetchProfile();
     }
-  }, [user, router]);
+  }, [user && user._id]);
 
   const handleEdit = () => {
     setFormData({
       fullName: user?.fullName || '',
       email: user?.email || '',
       username: user?.username || '',
+      bankAccountName: user?.bankAccountName || '',
+      bankAccountNumber: user?.bankAccountNumber || '',
+      bankName: user?.bankName || '',
+      bankBranch: user?.bankBranch || '',
       password: '',
       confirmPassword: ''
-    })
-    setError('')
-    setSuccess('')
-    setEditing(true)
-  }
+    });
+    setError('');
+    setSuccess('');
+    setEditing(true);
+  };
 
   const handleCancel = () => {
-    setEditing(false)
-    setError('')
-  }
+    setEditing(false);
+    setError('');
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-
+    e.preventDefault();
+    setError('');
     if (formData.password && formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -65,14 +75,18 @@ function ProfilePage() {
       const payload = {
         fullName: formData.fullName,
         email: formData.email,
-        username: formData.username
+        username: formData.username,
+        bankAccountName: formData.bankAccountName,
+        bankAccountNumber: formData.bankAccountNumber,
+        bankName: formData.bankName,
+        bankBranch: formData.bankBranch
       };
       if (formData.password) payload.password = formData.password;
       const response = await api.patch(
         `${process.env.NEXT_PUBLIC_API_USER_SERVICE}/api/users/${user._id || user.id}`,
         payload
       );
-      updateUser(response.data); // response.data is the updated user object
+      updateUser(response.data);
       setSuccess('Profile updated successfully!');
       setEditing(false);
     } catch (err) {
@@ -80,8 +94,12 @@ function ProfilePage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  if (!user) {
+    return <div>Loading...</div>;
   }
-  // ...existing code...
+
   return (
     <div className="profile-container">
       <div className="profile-card">
@@ -117,6 +135,30 @@ function ProfilePage() {
                 <p className="profile-field-value">{user?.email}</p>
               </div>
             </div>
+            <div className="profile-field">
+              <div>
+                <p className="profile-field-label">Bank Account Name</p>
+                <p className="profile-field-value">{user?.bankAccountName || '-'}</p>
+              </div>
+            </div>
+            <div className="profile-field">
+              <div>
+                <p className="profile-field-label">Bank Account Number</p>
+                <p className="profile-field-value">{user?.bankAccountNumber || '-'}</p>
+              </div>
+            </div>
+            <div className="profile-field">
+              <div>
+                <p className="profile-field-label">Bank Name</p>
+                <p className="profile-field-value">{user?.bankName || '-'}</p>
+              </div>
+            </div>
+            <div className="profile-field">
+              <div>
+                <p className="profile-field-label">Bank Branch</p>
+                <p className="profile-field-value">{user?.bankBranch || '-'}</p>
+              </div>
+            </div>
             <button onClick={handleEdit} className="profile-edit-btn">Edit Profile</button>
           </div>
         ) : (
@@ -149,7 +191,39 @@ function ProfilePage() {
               />
             </div>
             <div className="profile-form-group">
-              <label><FaLock /> New Password</label>
+              <label>Bank Account Name</label>
+              <input
+                type="text"
+                value={formData.bankAccountName}
+                onChange={e => setFormData({ ...formData, bankAccountName: e.target.value })}
+              />
+            </div>
+            <div className="profile-form-group">
+              <label>Bank Account Number</label>
+              <input
+                type="text"
+                value={formData.bankAccountNumber}
+                onChange={e => setFormData({ ...formData, bankAccountNumber: e.target.value })}
+              />
+            </div>
+            <div className="profile-form-group">
+              <label>Bank Name</label>
+              <input
+                type="text"
+                value={formData.bankName}
+                onChange={e => setFormData({ ...formData, bankName: e.target.value })}
+              />
+            </div>
+            <div className="profile-form-group">
+              <label>Bank Branch</label>
+              <input
+                type="text"
+                value={formData.bankBranch}
+                onChange={e => setFormData({ ...formData, bankBranch: e.target.value })}
+              />
+            </div>
+            <div className="profile-form-group">
+              <label>New Password</label>
               <input
                 type="password"
                 value={formData.password}
@@ -174,4 +248,6 @@ function ProfilePage() {
     </div>
   );
 }
-export default ProfilePage;
+
+
+

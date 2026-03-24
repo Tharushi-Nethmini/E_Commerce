@@ -18,16 +18,24 @@ class UserService {
 
       const token = this.generateToken(user);
 
+      // Only include bank details for suppliers
+      const userObj = {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        createdAt: user.createdAt
+      };
+      if (user.role === 'SUPPLIER') {
+        userObj.bankAccountName = user.bankAccountName;
+        userObj.bankAccountNumber = user.bankAccountNumber;
+        userObj.bankName = user.bankName;
+        userObj.bankBranch = user.bankBranch;
+      }
       return {
         token,
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          fullName: user.fullName,
-          role: user.role,
-          createdAt: user.createdAt
-        }
+        user: userObj
       };
     } catch (error) {
       throw error;
@@ -51,16 +59,24 @@ class UserService {
 
       const token = this.generateToken(user);
 
+      // Only include bank details for suppliers
+      const userObj = {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        createdAt: user.createdAt
+      };
+      if (user.role === 'SUPPLIER') {
+        userObj.bankAccountName = user.bankAccountName;
+        userObj.bankAccountNumber = user.bankAccountNumber;
+        userObj.bankName = user.bankName;
+        userObj.bankBranch = user.bankBranch;
+      }
       return {
         token,
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          fullName: user.fullName,
-          role: user.role,
-          createdAt: user.createdAt
-        }
+        user: userObj
       };
     } catch (error) {
       throw error;
@@ -92,20 +108,33 @@ class UserService {
   // Update user
   async updateUser(userId, updateData) {
     try {
-      // Don't allow password update through this method
-      delete updateData.password;
-
-      const user = await User.findByIdAndUpdate(
-        userId,
-        { ...updateData, updatedAt: new Date() },
-        { new: true, runValidators: true }
-      );
-
+      let user = await User.findById(userId);
       if (!user) {
         throw new Error('User not found');
       }
 
-      return user;
+      // Update allowed fields
+      if (updateData.fullName !== undefined) user.fullName = updateData.fullName;
+      if (updateData.email !== undefined) user.email = updateData.email;
+      if (updateData.username !== undefined) user.username = updateData.username;
+      if (updateData.bankAccountName !== undefined) user.bankAccountName = updateData.bankAccountName;
+      if (updateData.bankAccountNumber !== undefined) user.bankAccountNumber = updateData.bankAccountNumber;
+      if (updateData.bankName !== undefined) user.bankName = updateData.bankName;
+      if (updateData.bankBranch !== undefined) user.bankBranch = updateData.bankBranch;
+
+      // Only update password if provided
+      if (updateData.password) {
+        user.password = updateData.password;
+      }
+
+      user.updatedAt = new Date();
+      await user.save();
+
+      // Return all user fields except password
+      const userObj = user.toObject();
+      delete userObj.password;
+      delete userObj.__v;
+      return userObj;
     } catch (error) {
       throw error;
     }

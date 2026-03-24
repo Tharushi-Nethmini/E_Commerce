@@ -40,7 +40,12 @@ const userSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  // Supplier bank details
+  bankAccountName: { type: String },
+  bankAccountNumber: { type: String },
+  bankName: { type: String },
+  bankBranch: { type: String }
 }, {
   timestamps: true,
   toJSON: {

@@ -4,8 +4,10 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import api from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import '@/styles/payments.css'
+
 import { FaMoneyCheckAlt } from 'react-icons/fa';
 import { FaTrash } from 'react-icons/fa';
+import PaySupplierModal from '@/components/PaySupplierModal';
 
 
 function PaymentsPage() {
@@ -36,6 +38,8 @@ function PaymentsPage() {
     };
   const [restockPayments, setRestockPayments] = useState([]);
   const [payingRestockId, setPayingRestockId] = useState(null);
+  const [paySupplierModalOpen, setPaySupplierModalOpen] = useState(false);
+  const [selectedRestock, setSelectedRestock] = useState(null);
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [refunding, setRefunding] = useState(null)
@@ -170,16 +174,71 @@ function PaymentsPage() {
     fetchPaymentMethods()
     fetchSupplierPayments();
   }, [user, fetchPayments, fetchPaymentMethods, fetchSupplierPayments]);
-  // Handler for admin to "pay" a fulfilled restock request
-  const handlePayRestock = async (restockId) => {
-    if (!confirm('Mark this restock request as paid?')) return;
-    setPayingRestockId(restockId);
+  // Handler for admin to open pay supplier modal
+
+  // Fetch supplier bank details and open modal
+  const handlePayRestock = async (restock) => {
+    let supplierId = restock.productId?.supplier || restock.supplierId;
+    let supplierBank = {};
+    if (!supplierId) {
+      console.error('No supplierId found for restock:', restock);
+      alert('Cannot pay supplier: missing supplier ID. Please check the restock/payment data.');
+      return;
+    }
     try {
-      await api.patch(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/${restockId}/pay`);
-      // Refresh supplier payments after paying
+      const res = await api.get(`${process.env.NEXT_PUBLIC_API_USER_SERVICE}/api/users/${supplierId}`);
+      supplierBank = {
+        accountName: res.data.bankAccountName || '',
+        accountNumber: res.data.bankAccountNumber || '',
+        bankName: res.data.bankName || '',
+        branch: res.data.bankBranch || ''
+      };
+    } catch (e) {
+      console.error('Failed to fetch supplier bank details:', e);
+      alert('Failed to fetch supplier bank details.');
+    }
+    setSelectedRestock({ ...restock, supplierBank });
+    setPaySupplierModalOpen(true);
+  };
+
+  // Handler for submitting supplier payment
+  const submitSupplierPayment = async ({ amount, paymentMethod, bankDetails }) => {
+    setPayingRestockId(selectedRestock._id);
+    try {
+      // If productId is populated, get supplier from it
+      let supplierId = selectedRestock.productId?.supplier;
+      // If productId is an object, get its _id for reference
+      let productId = selectedRestock.productId?._id || selectedRestock.productId;
+      // Ensure supplierId is a string (ObjectId)
+      if (typeof supplierId === 'object' && supplierId !== null && supplierId._id) {
+        supplierId = supplierId._id;
+      }
+      if (!supplierId) {
+        alert('Supplier ID not found for this restock request.');
+        setPayingRestockId(null);
+        return;
+      }
+      // Ensure amount is a number
+      const paymentAmount = Number(amount);
+      const payload = {
+        restockRequestId: selectedRestock._id,
+        supplierId,
+        amount: paymentAmount,
+        paymentMethod,
+      };
+      if (paymentMethod === 'BANK_TRANSFER') {
+        payload.bankDetails = bankDetails;
+      }
+      // Debug log
+      console.log('Submitting supplier payment payload:', payload);
+      await api.post(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/supplier-payments`, payload);
+      setPaySupplierModalOpen(false);
+      setSelectedRestock(null);
       fetchSupplierPayments();
+      alert('Payment successful!');
     } catch (err) {
-      alert('Failed to mark as paid.');
+      const backendMsg = err?.response?.data?.message;
+      alert('Payment failed.' + (backendMsg ? `\n${backendMsg}` : ''));
     }
     setPayingRestockId(null);
   };
@@ -335,8 +394,8 @@ function PaymentsPage() {
                       ) : req.status === 'FULFILLED' ? (
                         <button
                           className="user-edit-btn"
-                          onClick={() => handlePayRestock(req._id)}
-                          title="Mark as Paid"
+                          onClick={() => handlePayRestock(req)}
+                          title="Pay Supplier"
                         >
                           <FaMoneyCheckAlt /> Pay
                         </button>
@@ -359,6 +418,15 @@ function PaymentsPage() {
           )}
         </div>
       )}
+
+      {/* Always render the modal at the root of PaymentsPage */}
+      <PaySupplierModal
+        open={paySupplierModalOpen}
+        onClose={() => { setPaySupplierModalOpen(false); setSelectedRestock(null); }}
+        restock={selectedRestock}
+        onSubmit={submitSupplierPayment}
+        readOnlyBankFields={true}
+      />
 
       {/* Customer Payments Section */}
       <div className="payments-section">

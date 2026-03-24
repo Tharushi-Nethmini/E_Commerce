@@ -1,15 +1,13 @@
-'use client'
+"use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
-import { FaUser, FaEnvelope, FaIdBadge, FaLock } from 'react-icons/fa';
 import '@/styles/profile.css';
+import { FaUser, FaEnvelope, FaIdBadge, FaLock } from 'react-icons/fa';
 
-function ProfilePage() {
+export default function AdminProfilePage() {
   const { user, updateUser } = useAuth();
-  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
@@ -22,17 +20,21 @@ function ProfilePage() {
     confirmPassword: ''
   });
 
-  // Redirect based on user role
   useEffect(() => {
-    if (user) {
-      if (user.role === 'ADMIN') {
-        router.replace('/admin/profile');
-      } else if (user.role === 'SUPPLIER') {
-        router.replace('/supplier/profile');
-      }
-      // CUSTOMER stays on /profile
+    if (user && user._id) {
+      const fetchProfile = async () => {
+        try {
+          const res = await api.get(`${process.env.NEXT_PUBLIC_API_USER_SERVICE}/api/users/${user._id}`);
+          if (res.data) {
+            updateUser(res.data);
+          }
+        } catch (err) {
+          console.error('Profile fetch error:', err);
+        }
+      };
+      fetchProfile();
     }
-  }, [user, router]);
+  }, [user && user._id]);
 
   const handleEdit = () => {
     setFormData({
@@ -41,21 +43,20 @@ function ProfilePage() {
       username: user?.username || '',
       password: '',
       confirmPassword: ''
-    })
-    setError('')
-    setSuccess('')
-    setEditing(true)
-  }
+    });
+    setError('');
+    setSuccess('');
+    setEditing(true);
+  };
 
   const handleCancel = () => {
-    setEditing(false)
-    setError('')
-  }
+    setEditing(false);
+    setError('');
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-
+    e.preventDefault();
+    setError('');
     if (formData.password && formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -72,7 +73,7 @@ function ProfilePage() {
         `${process.env.NEXT_PUBLIC_API_USER_SERVICE}/api/users/${user._id || user.id}`,
         payload
       );
-      updateUser(response.data); // response.data is the updated user object
+      updateUser(response.data);
       setSuccess('Profile updated successfully!');
       setEditing(false);
     } catch (err) {
@@ -80,8 +81,12 @@ function ProfilePage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  if (!user) {
+    return <div>Loading...</div>;
   }
-  // ...existing code...
+
   return (
     <div className="profile-container">
       <div className="profile-card">
@@ -174,4 +179,3 @@ function ProfilePage() {
     </div>
   );
 }
-export default ProfilePage;

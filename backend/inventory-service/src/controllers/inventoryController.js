@@ -61,8 +61,13 @@ class InventoryController {
     async getRestockRequests(req, res) {
       try {
         let supplierId = null;
+        // Always enforce supplier filtering if a supplier is logged in
         if (req.user && req.user.role === 'SUPPLIER') {
           supplierId = req.user.userId;
+        }
+        // If a supplierId is provided in query (e.g., for admin filtering), use it, but only if the requester is admin
+        if (req.query.supplierId && req.user && req.user.role === 'ADMIN') {
+          supplierId = req.query.supplierId;
         }
         const restockRequests = await inventoryService.getRestockRequests({ supplierId });
         res.status(200).json(restockRequests);

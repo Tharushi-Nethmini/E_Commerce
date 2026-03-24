@@ -12,7 +12,11 @@ export default function Register() {
     password: '',
     confirmPassword: '',
     fullName: '',
-    role: 'CUSTOMER'
+    role: 'CUSTOMER',
+    bankAccountName: '',
+    bankAccountNumber: '',
+    bankName: '',
+    bankBranch: ''
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -40,6 +44,13 @@ export default function Register() {
 
     setLoading(true)
     const { confirmPassword, ...registrationData } = formData
+    // Only include bank details if role is SUPPLIER
+    if (formData.role !== 'SUPPLIER') {
+      delete registrationData.bankAccountName;
+      delete registrationData.bankAccountNumber;
+      delete registrationData.bankName;
+      delete registrationData.bankBranch;
+    }
     const result = await register(registrationData)
     
     if (!result.success) {
@@ -142,6 +153,59 @@ export default function Register() {
             </select>
           </div>
 
+          {/* Show bank details fields only if role is SUPPLIER */}
+          {formData.role === 'SUPPLIER' && (
+            <>
+              <div className="register-form-group">
+                <label>Bank Account Name</label>
+                <input
+                  type="text"
+                  name="bankAccountName"
+                  value={formData.bankAccountName}
+                  onChange={handleChange}
+                  placeholder="Bank account name"
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <div className="register-form-group">
+                <label>Bank Account Number</label>
+                <input
+                  type="text"
+                  name="bankAccountNumber"
+                  value={formData.bankAccountNumber}
+                  onChange={handleChange}
+                  placeholder="Bank account number"
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <div className="register-form-group">
+                <label>Bank Name</label>
+                <input
+                  type="text"
+                  name="bankName"
+                  value={formData.bankName}
+                  onChange={handleChange}
+                  placeholder="Bank name"
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <div className="register-form-group">
+                <label>Bank Branch</label>
+                <input
+                  type="text"
+                  name="bankBranch"
+                  value={formData.bankBranch}
+                  onChange={handleChange}
+                  placeholder="Bank branch"
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </>
+          )}
           <button
             type="submit"
             className="register-submit-btn"

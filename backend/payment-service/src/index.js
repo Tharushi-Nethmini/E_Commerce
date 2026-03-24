@@ -24,6 +24,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/supplier-payments', require('./routes/supplierPaymentRoutes'));
 
 // Health check
 app.get('/health', (req, res) => {
