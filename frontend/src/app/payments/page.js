@@ -157,8 +157,15 @@ function PaymentsPage() {
         api.get(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/fulfilled`).then(res => res.data || []).catch(() => []),
         api.get(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/paid`).then(res => res.data || []).catch(() => [])
       ]).then(([fulfilled, paid]) => {
-        // Combine and sort by createdAt descending
-        const all = [...fulfilled, ...paid].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        // Deduplicate by _id, always prefer PAID status if both exist
+        const byId = {};
+        for (const req of [...fulfilled, ...paid]) {
+          const id = req._id;
+          if (!byId[id] || req.status === 'PAID') {
+            byId[id] = req;
+          }
+        }
+        const all = Object.values(byId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setRestockPayments(all);
       }).catch(() => setRestockPayments([]));
     }

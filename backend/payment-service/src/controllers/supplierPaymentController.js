@@ -15,6 +15,7 @@ try {
 }
 
 // Create a supplier payment (admin pays supplier for restock)
+const axios = require('axios');
 exports.createSupplierPayment = async (req, res) => {
   try {
     const { restockRequestId, supplierId, amount, paymentMethod, bankDetails } = req.body;
@@ -33,18 +34,19 @@ exports.createSupplierPayment = async (req, res) => {
       paidAt: new Date()
     });
 
-    // Mark restock request as PAID (if model exists)
-    if (RestockRequest) {
-      try {
-        const updateResult = await RestockRequest.findByIdAndUpdate(restockRequestId, { status: 'PAID' });
-        if (!updateResult) {
-          console.error('[SupplierPayment] RestockRequest not found for ID:', restockRequestId);
-        }
-      } catch (err) {
-        console.error('[SupplierPayment] Error updating RestockRequest:', err);
-      }
-    } else {
-      console.error('[SupplierPayment] RestockRequest model not loaded.');
+    // Mark restock request as PAID via inventory-service API
+    try {
+      // Replace with your actual inventory service URL/port if different
+      const inventoryServiceUrl = process.env.INVENTORY_SERVICE_URL || 'http://localhost:8082';
+      // Use ADMIN_TOKEN from env or config
+      const adminToken = process.env.ADMIN_TOKEN;
+      await axios.patch(
+        `${inventoryServiceUrl}/api/inventory/restock-requests/${restockRequestId}/pay`,
+        {},
+        adminToken ? { headers: { Authorization: `Bearer ${adminToken}` } } : {}
+      );
+    } catch (err) {
+      console.error('[SupplierPayment] Error updating RestockRequest status via inventory-service API:', err?.response?.data || err.message);
     }
 
     res.status(201).json(payment);

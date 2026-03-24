@@ -15,7 +15,7 @@ class InventoryService {
   async payRestockRequest(requestId) {
     const request = await RestockRequest.findById(requestId);
     if (!request) throw new Error('Restock request not found');
-    if (request.status !== 'FULFILLED') throw new Error('Only fulfilled requests can be paid');
+    if (request.status !== 'FULFILLED' && request.status !== 'PAID') throw new Error('Only fulfilled or already paid requests can be paid');
     request.status = 'PAID';
     await request.save();
     return request;
