@@ -18,7 +18,10 @@ try {
 exports.createSupplierPayment = async (req, res) => {
   try {
     const { restockRequestId, supplierId, amount, paymentMethod, bankDetails } = req.body;
-
+    if (!restockRequestId || !supplierId || !amount || !paymentMethod) {
+      console.error('[SupplierPayment] Missing required fields:', { restockRequestId, supplierId, amount, paymentMethod });
+      return res.status(400).json({ message: 'Missing required fields.' });
+    }
     // Create payment record
     const payment = await SupplierPayment.create({
       restockRequestId,
@@ -32,11 +35,21 @@ exports.createSupplierPayment = async (req, res) => {
 
     // Mark restock request as PAID (if model exists)
     if (RestockRequest) {
-      await RestockRequest.findByIdAndUpdate(restockRequestId, { status: 'PAID' });
+      try {
+        const updateResult = await RestockRequest.findByIdAndUpdate(restockRequestId, { status: 'PAID' });
+        if (!updateResult) {
+          console.error('[SupplierPayment] RestockRequest not found for ID:', restockRequestId);
+        }
+      } catch (err) {
+        console.error('[SupplierPayment] Error updating RestockRequest:', err);
+      }
+    } else {
+      console.error('[SupplierPayment] RestockRequest model not loaded.');
     }
 
     res.status(201).json(payment);
   } catch (error) {
+    console.error('[SupplierPayment] Error creating supplier payment:', error);
     res.status(400).json({ message: error.message });
   }
 };
