@@ -59,21 +59,21 @@ export default function Navbar() {
             {/* Supplier: Supplier Panel navigation */}
             {isSupplier && (
               <>
-                <Link href="/supplier" className={`navbar-link ${isActive('/supplier')}`}>
+                <Link href="/supplier" className={`navbar-link ${isActive('/supplier')}`}> 
                   <FaChartBar />
                   <span>Supplier Panel</span>
                 </Link>
-                <Link href="/supplier/products" className={`navbar-link ${isActive('/supplier/products')}`}>
+                <Link href="/supplier/products" className={`navbar-link ${isActive('/supplier/products')}`}> 
                   <FaBox />
                   <span>Products</span>
                 </Link>
-                <Link href="/supplier/orders" className={`navbar-link ${isActive('/supplier/orders')}`}>
+                <Link href="/supplier/orders" className={`navbar-link ${isActive('/supplier/orders')}`}> 
                   <FaShoppingCart />
                   <span>Orders</span>
                 </Link>
-                <Link href="/supplier/analytics" className={`navbar-link ${isActive('/supplier/analytics')}`}>
-                  <FaChartBar />
-                  <span>Analytics</span>
+                <Link href="/supplier/payments" className={`navbar-link ${isActive('/supplier/payments')}`}> 
+                  <FaCreditCard />
+                  <span>Payments</span>
                 </Link>
               </>
             )}
