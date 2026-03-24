@@ -7,10 +7,10 @@ const { upload } = require('../config/cloudinary');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // Delete a restock request (admin)
-router.delete('/restock-requests/:id', /* authenticateToken, authorizeRoles('ADMIN'), */ inventoryController.deleteRestockRequest);
+router.delete('/restock-requests/:id', authenticateToken, authorizeRoles('ADMIN'), inventoryController.deleteRestockRequest);
 
 // Mark a fulfilled restock request as paid (admin)
-router.patch('/restock-requests/:id/pay', /* authenticateToken, authorizeRoles('ADMIN'), */ inventoryController.payRestockRequest);
+router.patch('/restock-requests/:id/pay', authenticateToken, authorizeRoles('ADMIN'), inventoryController.payRestockRequest);
 // Get only fulfilled restock requests (for admin payments)
 router.get('/restock-requests/fulfilled', /* authenticateToken, authorizeRoles('ADMIN'), */ inventoryController.getFulfilledRestockRequests);
 
@@ -18,14 +18,14 @@ router.get('/restock-requests/fulfilled', /* authenticateToken, authorizeRoles('
 router.get('/restock-requests/paid', /* authenticateToken, authorizeRoles('ADMIN'), */ inventoryController.getPaidRestockRequests);
 
 // Supplier fulfill restock request
-router.patch('/restock-requests/:id/fulfill', /* authenticateToken, authorizeRoles('SUPPLIER'), */ inventoryController.fulfillRestockRequest);
+router.patch('/restock-requests/:id/fulfill', authenticateToken, authorizeRoles('SUPPLIER'), inventoryController.fulfillRestockRequest);
 
 
 // Admin restock request endpoint
 router.post('/restock-request', /* authenticateToken, authorizeRoles('ADMIN'), */ inventoryController.createRestockRequest);
 
 // Get restock requests (admin: all, supplier: only their products)
-router.get('/restock-requests', /* authenticateToken, authorizeRoles('ADMIN', 'SUPPLIER'), */ inventoryController.getRestockRequests);
+router.get('/restock-requests', authenticateToken, authorizeRoles('ADMIN', 'SUPPLIER'), inventoryController.getRestockRequests);
 
 /**
  * @swagger
