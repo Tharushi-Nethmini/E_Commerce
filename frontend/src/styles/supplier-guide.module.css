@@ -1,0 +1,58 @@
+.guideContainer {
+  max-width: 700px;
+  margin: 48px auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #7c3aed22;
+  padding: 40px 36px 32px 36px;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+.guideTitle {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #7c3aed;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.guideText {
+  color: #444;
+  margin-bottom: 22px;
+  font-size: 1.08rem;
+}
+.guideSection {
+  margin-top: 28px;
+  background: #f7f7fa;
+  border-radius: 12px;
+  padding: 22px 20px 10px 20px;
+  box-shadow: 0 1px 6px #7c3aed0a;
+}
+.guideSectionTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #7c3aed;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.guideList {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+.guideList li {
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ece9f6;
+}
+.guideList li:last-child {
+  border-bottom: none;
+}
+.guideStep {
+  color: #555;
+  margin-top: 4px;
+  font-size: 0.98rem;
+  padding-left: 2px;
+}

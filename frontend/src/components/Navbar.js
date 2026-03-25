@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import {
   FaHome, FaBox, FaShoppingCart, FaCreditCard, FaUsers,
-  FaSignOutAlt, FaUserCircle, FaChartBar, FaStore
+  FaSignOutAlt, FaUserCircle, FaChartBar, FaStore, FaBookOpen, FaLifeRing
 } from 'react-icons/fa'
 import NotificationIcon from './NotificationIcon'
 import '@/styles/navbar.css'
@@ -70,6 +70,14 @@ export default function Navbar() {
                 <Link href="/supplier/orders" className={`navbar-link ${isActive('/supplier/orders')}`}> 
                   <FaShoppingCart />
                   <span>Orders</span>
+                </Link>
+                <Link href="/supplier/guide" className={`navbar-link ${isActive('/supplier/guide')}`}> 
+                  <FaBookOpen />
+                  <span>Supplier Guide</span>
+                </Link>
+                <Link href="/supplier/support" className={`navbar-link ${isActive('/supplier/support')}`}> 
+                  <FaLifeRing />
+                  <span>Support</span>
                 </Link>
               </>
             )}

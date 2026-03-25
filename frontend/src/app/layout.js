@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 import { NotificationProvider } from '@/context/NotificationContext'
 import Navbar from '@/components/Navbar'
+import AuthRedirector from '@/components/AuthRedirector'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,12 +23,14 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <AuthProvider>
           <NotificationProvider>
-            <div className="min-h-screen bg-gray-50">
-              <Navbar />
-              <main className="container mx-auto px-4 py-8">
-                {children}
-              </main>
-            </div>
+            <AuthRedirector>
+              <div className="min-h-screen bg-gray-50">
+                <Navbar />
+                <main className="container mx-auto px-4 py-8">
+                  {children}
+                </main>
+              </div>
+            </AuthRedirector>
           </NotificationProvider>
         </AuthProvider>
       </body>

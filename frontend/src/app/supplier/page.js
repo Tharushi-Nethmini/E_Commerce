@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/context/NotificationContext";
 import api from "@/lib/api";
 import styles from "@/styles/supplier-panel.module.css";
-import { FaBox, FaShoppingCart , FaBell } from "react-icons/fa";
+import { FaBox, FaShoppingCart , FaBell, FaChartLine } from "react-icons/fa";
 import { useRouter as useNextRouter } from "next/navigation";
 
 export default function SupplierHomePage() {
@@ -91,36 +91,27 @@ export default function SupplierHomePage() {
           </div>
           <FaBox size={80} style={{ opacity: 0.15 }} />
         </div>
-        <div className={styles.supplierPanelStats}>
-          <div className={styles.supplierPanelStatCard}>
-            <FaShoppingCart size={32} style={{ color: "#7c3aed" }} />
-            <div>
-              <div className={styles.supplierPanelStatValue}>{loading ? "-" : stats.totalOrders}</div>
-              <div className={styles.supplierPanelStatLabel}>Total Orders</div>
-            </div>
-          </div>
-          <div className={styles.supplierPanelStatCard}>
-            <FaBox size={32} style={{ color: "#f59e42" }} />
-            <div>
-              <div className={styles.supplierPanelStatValue}>{loading ? "-" : stats.activeOrders}</div>
-              <div className={styles.supplierPanelStatLabel}>Active Orders</div>
-            </div>
-          </div>
-          <div className={styles.supplierPanelStatCard}>
-            <FaBox size={32} style={{ color: "#3a2fa4" }} />
-            <div>
-              <div className={styles.supplierPanelStatValue}>{loading ? "-" : stats.productCount}</div>
-              <div className={styles.supplierPanelStatLabel}>Products</div>
-            </div>
-          </div>
-          <div className={styles.supplierPanelStatCard}>
-            <FaBell size={32} style={{ color: "#ff4d6d" }} />
-            <div>
-              <div className={styles.supplierPanelStatValue}>{loading ? "-" : stats.unreadNotifications}</div>
-              <div className={styles.supplierPanelStatLabel}>Unread Notifications</div>
-            </div>
+        {/* Help Section */}
+        <div style={{ margin: '32px 0 24px 0', background: '#f9fafb', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px #7c3aed11' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Need Help?</h2>
+          <div style={{ color: '#555', marginBottom: 8 }}>
+            If you have any questions or need support, please check our
+            <a href="/supplier/guide" style={{ color: '#7c3aed', textDecoration: 'underline', marginLeft: 4 }}>Supplier Guide</a>
+            or
+            <a href="/supplier/support" style={{ color: '#7c3aed', textDecoration: 'underline', marginLeft: 4 }}>contact support</a>.
           </div>
         </div>
+
+        {/* Announcements Section */}
+        <div style={{ margin: '0 0 24px 0', background: '#fef9c3', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px #f59e4211' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Announcements</h2>
+          <ul style={{ color: '#7c3aed', margin: 0, padding: 0, listStyle: 'disc inside' }}>
+            <li>New product approval workflow launched!</li>
+            <li>Contact support for onboarding help.</li>
+          </ul>
+        </div>
+
+        
         <div className={styles.supplierPanelQuickActionsTitle}>Quick Actions</div>
         <div className={styles.supplierPanelQuickActions}>
           {quickActions.map((action, idx) => (

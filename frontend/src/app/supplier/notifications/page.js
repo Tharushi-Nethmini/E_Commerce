@@ -15,7 +15,7 @@ export default function SupplierNotificationsPage() {
   }
 
   return (
-    <div className="supplier-notifications-page">
+    <div>
       <h1>All Notifications</h1>
       {loading ? (
         <div>Loading notifications...</div>
