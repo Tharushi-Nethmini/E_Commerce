@@ -584,6 +584,7 @@ function PaymentsPage() {
         </div>
       </div>
 
+      {/*
       <div className="payment-methods-section">
         <div className="payment-methods-header">
           <h2 className="payment-methods-title">Payment Methods</h2>
@@ -685,6 +686,7 @@ function PaymentsPage() {
           </div>
         )}
       </div>
+      */}
     </div>
   )
 }
