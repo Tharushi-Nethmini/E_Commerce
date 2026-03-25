@@ -98,7 +98,7 @@ export default function SupplierOrdersPage() {
                       >
                         <FaCheck /> Restock
                       </button>
-                    ) : req.status === 'FULFILLED' ? (
+                    ) : (req.status === 'FULFILLED' || req.status === 'PAID') ? (
                       <button
                         className="user-edit-btn"
                         style={{ opacity: 0.6, cursor: 'not-allowed' }}

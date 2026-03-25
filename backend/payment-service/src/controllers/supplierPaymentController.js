@@ -61,7 +61,13 @@ exports.getSupplierPayments = async (req, res) => {
   try {
     const filter = {};
     if (req.query.supplierId) filter.supplierId = req.query.supplierId;
-    const payments = await SupplierPayment.find(filter).sort({ createdAt: -1 });
+    // Populate restockRequestId and its productId for product details
+    const payments = await SupplierPayment.find(filter)
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'restockRequestId',
+        populate: { path: 'productId' }
+      });
     res.json(payments);
   } catch (error) {
     res.status(500).json({ message: error.message });

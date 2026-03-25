@@ -71,10 +71,6 @@ export default function Navbar() {
                   <FaShoppingCart />
                   <span>Orders</span>
                 </Link>
-                <Link href="/supplier/payments" className={`navbar-link ${isActive('/supplier/payments')}`}> 
-                  <FaCreditCard />
-                  <span>Payments</span>
-                </Link>
               </>
             )}
             {/* User navigation (not admin, not supplier) */}
