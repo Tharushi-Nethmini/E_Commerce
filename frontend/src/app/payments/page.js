@@ -238,13 +238,12 @@ function PaymentsPage() {
       }
       // Debug log
       console.log('Submitting supplier payment payload:', payload);
-      await api.post(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/supplier-payments`, payload);
-      // Optimistically update the UI so the button shows 'Paid' immediately
-      setRestockPayments(prev => prev.map(r => r._id === selectedRestock._id ? { ...r, status: 'PAID' } : r));
+      const paymentResponse = await api.post(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/supplier-payments`, payload);
+      console.log('Supplier payment backend response:', paymentResponse.data);
       setPaySupplierModalOpen(false);
       setSelectedRestock(null);
-      // Commented out to avoid overwriting optimistic update with stale backend data
-      // fetchSupplierPayments();
+      // Always refetch supplier payments from backend to ensure UI is in sync
+      await fetchSupplierPayments();
       alert('Payment successful!');
     } catch (err) {
       const backendMsg = err?.response?.data?.message;
