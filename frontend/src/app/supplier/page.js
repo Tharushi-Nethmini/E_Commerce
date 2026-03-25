@@ -1,80 +1,138 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { FaBox, FaShoppingCart, FaCreditCard } from "react-icons/fa";
+import { useNotifications } from "@/context/NotificationContext";
+import api from "@/lib/api";
+import styles from "@/styles/supplier-panel.module.css";
+import { FaBox, FaShoppingCart , FaBell } from "react-icons/fa";
+import { useRouter as useNextRouter } from "next/navigation";
 
 export default function SupplierHomePage() {
   const { user } = useAuth();
+  const { notifications } = useNotifications();
   const router = useRouter();
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    activeOrders: 0,
+    productCount: 0,
+    unreadNotifications: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       router.push("/login");
     } else if (user.role !== "SUPPLIER") {
       router.push("/");
+    } else {
+      fetchStats();
     }
-  }, [user, router]);
+    // eslint-disable-next-line
+  }, [user]);
+
+  useEffect(() => {
+    setStats((prev) => ({ ...prev, unreadNotifications: notifications.filter(n => !n.read).length }));
+  }, [notifications]);
+
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      // Fetch products
+      const prodRes = await api.get(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/products`);
+      const supplierProducts = prodRes.data.filter(p => p.supplier === user._id);
+      // Fetch orders
+      const orderRes = await api.get(`${process.env.NEXT_PUBLIC_API_ORDER_SERVICE}/api/orders`);
+      const supplierProductIds = new Set(supplierProducts.map(p => p._id));
+      const supplierOrders = orderRes.data.filter(o => supplierProductIds.has(o.productId));
+      // Active orders (not FULFILLED or PAID)
+      const activeOrders = supplierOrders.filter(o => o.status !== "FULFILLED" && o.status !== "PAID");
+      setStats({
+        totalOrders: supplierOrders.length,
+        activeOrders: activeOrders.length,
+        productCount: supplierProducts.length,
+        unreadNotifications: notifications.filter(n => !n.read).length,
+      });
+    } catch (err) {
+      // fallback to zeros
+      setStats({
+        totalOrders: 0,
+        activeOrders: 0,
+        productCount: 0,
+        unreadNotifications: notifications.filter(n => !n.read).length,
+      });
+    }
+    setLoading(false);
+  };
+
+  const quickActions = [
+    {
+      icon: <FaShoppingCart style={{ color: "#10b981" }} />, label: "My Orders", desc: "Track your orders", href: "/supplier/orders"
+    },
+    {
+      icon: <FaBell style={{ color: "#ff4d6d" }} />, label: "Notifications", desc: "View all notifications", href: "/supplier/notifications"
+    },
+    {
+      icon: <FaBox style={{ color: "#3a2fa4" }} />, label: "Profile", desc: "Edit your profile", href: "/supplier/profile"
+    },
+  ];
+
+  const nextRouter = useNextRouter();
 
   return (
-    <div style={{ background: "#f7f7fa", minHeight: "100vh", padding: "2rem 0" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ background: "#7c3aed", color: "#fff", borderRadius: 24, padding: "2.5rem 2rem", marginBottom: 32, display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 4px 24px #7c3aed22" }}>
+    <div className={styles.supplierPanelContainer}>
+      <div className={styles.supplierPanelInner}>
+        <div className={styles.supplierPanelHero}>
           <div>
-            <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8 }}>
-              Welcome back, {user?.username}!
-            </h1>
-            <div style={{ fontSize: 18, opacity: 0.95 }}>
+            <h1>Welcome back, {user?.username}!</h1>
+            <div className={styles.supplierPanelHeroText}>
               Here&apos;s what&apos;s happening with your account today.
             </div>
           </div>
           <FaBox size={80} style={{ opacity: 0.15 }} />
         </div>
-
-        <div style={{ display: "flex", gap: 24, marginBottom: 32 }}>
-          <div style={{ flex: 1, background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 8px #7c3aed11", display: "flex", alignItems: "center", gap: 16 }}>
+        <div className={styles.supplierPanelStats}>
+          <div className={styles.supplierPanelStatCard}>
             <FaShoppingCart size={32} style={{ color: "#7c3aed" }} />
             <div>
-              <div style={{ fontSize: 24, fontWeight: 700 }}>0</div>
-              <div style={{ color: "#555" }}>Total Orders</div>
+              <div className={styles.supplierPanelStatValue}>{loading ? "-" : stats.totalOrders}</div>
+              <div className={styles.supplierPanelStatLabel}>Total Orders</div>
             </div>
           </div>
-          <div style={{ flex: 1, background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 8px #7c3aed11", display: "flex", alignItems: "center", gap: 16 }}>
+          <div className={styles.supplierPanelStatCard}>
             <FaBox size={32} style={{ color: "#f59e42" }} />
             <div>
-              <div style={{ fontSize: 24, fontWeight: 700 }}>0</div>
-              <div style={{ color: "#555" }}>Active Orders</div>
+              <div className={styles.supplierPanelStatValue}>{loading ? "-" : stats.activeOrders}</div>
+              <div className={styles.supplierPanelStatLabel}>Active Orders</div>
             </div>
           </div>
-          <div style={{ flex: 1, background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 8px #7c3aed11", display: "flex", alignItems: "center", gap: 16 }}>
-            <FaCreditCard size={32} style={{ color: "#10b981" }} />
+          <div className={styles.supplierPanelStatCard}>
+            <FaBox size={32} style={{ color: "#3a2fa4" }} />
             <div>
-              <div style={{ fontSize: 24, fontWeight: 700 }}>Rs. 0.00</div>
-              <div style={{ color: "#555" }}>Total Spent</div>
+              <div className={styles.supplierPanelStatValue}>{loading ? "-" : stats.productCount}</div>
+              <div className={styles.supplierPanelStatLabel}>Products</div>
+            </div>
+          </div>
+          <div className={styles.supplierPanelStatCard}>
+            <FaBell size={32} style={{ color: "#ff4d6d" }} />
+            <div>
+              <div className={styles.supplierPanelStatValue}>{loading ? "-" : stats.unreadNotifications}</div>
+              <div className={styles.supplierPanelStatLabel}>Unread Notifications</div>
             </div>
           </div>
         </div>
-
-        <div style={{ fontWeight: 600, fontSize: 22, marginBottom: 16 }}>Quick Actions</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
-          <div style={{ flex: "1 1 320px", background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 8px #7c3aed11", marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, fontWeight: 600, fontSize: 18 }}>
-              <FaBox style={{ color: "#7c3aed" }} /> Browse Products
+        <div className={styles.supplierPanelQuickActionsTitle}>Quick Actions</div>
+        <div className={styles.supplierPanelQuickActions}>
+          {quickActions.map((action, idx) => (
+            <div
+              key={action.label}
+              className={styles.supplierPanelQuickAction}
+              onClick={() => nextRouter.push(action.href)}
+            >
+              <div className={styles.supplierPanelQuickActionTitle}>{action.icon} {action.label}</div>
+              <div className={styles.supplierPanelQuickActionDesc}>{action.desc}</div>
             </div>
-            <div style={{ color: "#888", marginTop: 4 }}>Explore our full catalog</div>
-          </div>
-          <div style={{ flex: "1 1 320px", background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 8px #7c3aed11", marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, fontWeight: 600, fontSize: 18 }}>
-              <FaShoppingCart style={{ color: "#10b981" }} /> My Orders
-            </div>
-            <div style={{ color: "#888", marginTop: 4 }}>Track your orders</div>
-          </div>
-          <div style={{ flex: "1 1 320px", background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 2px 8px #7c3aed11", marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, fontWeight: 600, fontSize: 18 }}>
-              <FaCreditCard style={{ color: "#10b981" }} /> My Payments
-            </div>
-            <div style={{ color: "#888", marginTop: 4 }}>View payment history</div>
-          </div>
+          ))}
         </div>
       </div>
     </div>

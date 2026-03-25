@@ -15,7 +15,13 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
-      router.push(user.role === 'ADMIN' ? '/analytics' : '/home')
+      if (user.role === 'ADMIN') {
+        router.push('/analytics')
+      } else if (user.role === 'SUPPLIER') {
+        router.push('/supplier')
+      } else {
+        router.push('/home')
+      }
     }
   }, [user, router])
 
