@@ -1,6 +1,8 @@
-# Low Stock Email Notification
+# Low Stock Email Notification (Not API)
 
-This service supports automatic supplier notification when product stock drops below a threshold. To enable email notifications, set the following environment variables:
+This service supports automatic supplier notification via email when product stock drops below a threshold. **Note:** Notification API endpoints for users are now managed by the User Service, not here.
+
+To enable low-stock email notifications, set the following environment variables:
 
 ```
 NOTIFY_EMAIL_USER=your_email@gmail.com

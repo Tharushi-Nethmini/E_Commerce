@@ -75,6 +75,7 @@ Our e-commerce application is built using a microservices architecture with four
 **Port:** 8081  
 **Responsibility:** User authentication and profile management
 
+
 **Key Features:**
 - User registration with validation
 - Login with JWT token generation
@@ -82,12 +83,17 @@ Our e-commerce application is built using a microservices architecture with four
 - User profile CRUD operations
 - Password encryption using BCrypt
 - Role-based user types (CUSTOMER, ADMIN, SUPPLIER)
+- **Notification management (view, mark as read, delete notifications for users)**
+
 
 **API Endpoints:**
 - `POST /api/users/register` - Register new user
 - `POST /api/users/login` - Login and get JWT token
 - `GET /api/users/{id}` - Get user details
 - `POST /api/users/validate` - Validate JWT token (for inter-service calls)
+- `GET /api/notifications` - Get all notifications for the logged-in user
+- `PATCH /api/notifications/{id}/read` - Mark a notification as read
+- `DELETE /api/notifications/{id}` - Delete a notification by ID (supplier only)
 
 **Role in Application:** Provides authentication and user information to other services, particularly the Order Service which validates users before creating orders.
 

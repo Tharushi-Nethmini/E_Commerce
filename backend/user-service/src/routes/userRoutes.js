@@ -224,3 +224,98 @@ router.patch('/:id', authenticateToken, userController.partialUpdateUser);
 router.delete('/:id', authenticateToken, authorizeRoles('ADMIN'), userController.deleteUser);
 
 module.exports = router;
+
+// ...existing code...
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Notification:
+ *       type: object
+ *       required:
+ *         - user
+ *         - type
+ *         - title
+ *         - message
+ *       properties:
+ *         id:
+ *           type: string
+ *         user:
+ *           type: string
+ *         type:
+ *           type: string
+ *           enum: [LOW_STOCK, ORDER, INFO]
+ *         title:
+ *           type: string
+ *         message:
+ *           type: string
+ *         read:
+ *           type: boolean
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ */
+
+/**
+ * @swagger
+ * /api/notifications/{id}:
+ *   delete:
+ *     summary: Delete a notification by ID (supplier only)
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notification deleted
+ *       404:
+ *         description: Notification not found
+ *       403:
+ *         description: Not authorized
+ */
+
+/**
+ * @swagger
+ * /api/notifications:
+ *   get:
+ *     summary: Get all notifications for the logged-in user
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of notifications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Notification'
+ */
+
+/**
+ * @swagger
+ * /api/notifications/{id}/read:
+ *   patch:
+ *     summary: Mark a notification as read
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notification marked as read
+ *       404:
+ *         description: Notification not found
+ */
+// ...existing code...

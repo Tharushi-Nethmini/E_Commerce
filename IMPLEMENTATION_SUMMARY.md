@@ -12,6 +12,7 @@ You now have a **complete, production-ready microservices-based e-commerce platf
    - User registration and authentication
    - JWT token management
    - User profile management
+   - **Notification management (view, mark as read, delete)**
    - 15+ JavaScript files, fully documented
 
 2. **Inventory Service** (Port 8082)
@@ -58,6 +59,9 @@ You now have a **complete, production-ready microservices-based e-commerce platf
 - **Swagger UI**: Interactive API documentation for each service
 
 ## 🏗️ Total Files Created
+
+---
+**Note:** Notification API endpoints have been moved from the Inventory Service to the User Service for improved separation of concerns and user-centric notification management.
 
 - **70+ JavaScript source files**
 - **4 complete Node.js/Express applications**

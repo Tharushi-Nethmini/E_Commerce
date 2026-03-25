@@ -4,58 +4,7 @@ const Notification = require('../models/Notification');
 const { getUserNotifications, markNotificationRead } = require('../services/notificationService');
 const { authenticateToken } = require('../middleware/auth');
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     Notification:
- *       type: object
- *       required:
- *         - user
- *         - type
- *         - title
- *         - message
- *       properties:
- *         id:
- *           type: string
- *         user:
- *           type: string
- *         type:
- *           type: string
- *           enum: [LOW_STOCK, ORDER, INFO]
- *         title:
- *           type: string
- *         message:
- *           type: string
- *         read:
- *           type: boolean
- *         createdAt:
- *           type: string
- *           format: date-time
- */
-
-/**
- * @swagger
- * /api/notifications/{id}:
- *   delete:
- *     summary: Delete a notification by ID (supplier only)
- *     tags: [Notifications]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Notification deleted
- *       404:
- *         description: Notification not found
- *       403:
- *         description: Not authorized
- */
+// ...existing code...
 // Delete a notification by ID (supplier can remove)
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
@@ -72,24 +21,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /api/notifications:
- *   get:
- *     summary: Get all notifications for the logged-in user
- *     tags: [Notifications]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of notifications
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Notification'
- */
+// ...existing code...
 // Get all notifications for the logged-in user
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -100,26 +32,7 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /api/notifications/{id}/read:
- *   patch:
- *     summary: Mark a notification as read
- *     tags: [Notifications]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Notification marked as read
- *       404:
- *         description: Notification not found
- */
+// ...existing code...
 // Mark a notification as read
 router.patch('/:id/read', authenticateToken, async (req, res) => {
   try {

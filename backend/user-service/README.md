@@ -12,6 +12,7 @@ User authentication and management microservice for the E-Commerce application.
 - Swagger API documentation
 - Docker support
 
+
 ## API Endpoints
 
 ### Public Endpoints
@@ -26,6 +27,11 @@ User authentication and management microservice for the E-Commerce application.
 - `PUT /api/users/:id` - Update user
 - `PATCH /api/users/:id` - Partially update user
 - `DELETE /api/users/:id` - Delete user (Admin only)
+
+### Notification Endpoints (requires authentication)
+- `GET /api/notifications` - Get all notifications for the logged-in user
+- `PATCH /api/notifications/{id}/read` - Mark a notification as read
+- `DELETE /api/notifications/{id}` - Delete a notification by ID (supplier only)
 
 ## Getting Started
 
