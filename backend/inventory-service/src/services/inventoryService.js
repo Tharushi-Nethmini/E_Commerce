@@ -1,7 +1,7 @@
 const RestockRequest = require('../models/RestockRequest');
 const Product = require('../models/Product');
 const { cloudinary } = require('../config/cloudinary');
-const { createLowStockNotification } = require('./notificationService');
+const { createLowStockNotification, createRestockNotification } = require('./notificationService');
 
 class InventoryService {
   // Delete a restock request by ID
@@ -49,8 +49,20 @@ class InventoryService {
     if (!productId || !quantity) {
       throw new Error('Product and quantity are required');
     }
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error('Product not found');
+    }
     const restockRequest = new RestockRequest({ productId, quantity, requestedBy });
     await restockRequest.save();
+    // Notify supplier if product has a supplier
+    if (product.supplier) {
+      await createRestockNotification({
+        userId: product.supplier,
+        productName: product.name,
+        quantity
+      });
+    }
     return restockRequest;
   }
       // Approve product (set status to ACTIVE)

@@ -1,23 +1,12 @@
+"use client"
 import { FaBell } from 'react-icons/fa'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import axios from 'axios'
-import { useAuth } from '@/context/AuthContext'
+import { useNotifications } from '@/context/NotificationContext'
 
 export default function NotificationIcon() {
-  const { user, token } = useAuth()
-  const [notifications, setNotifications] = useState([])
+  const { notifications } = useNotifications()
   const [showDropdown, setShowDropdown] = useState(false)
-
-  useEffect(() => {
-    if (!user || user.role !== 'SUPPLIER') return
-    const url = `${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/notifications`;
-    axios.get(url, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setNotifications(res.data))
-      .catch(() => setNotifications([]))
-  }, [user, token])
 
   const unreadCount = notifications.filter(n => !n.read).length
 

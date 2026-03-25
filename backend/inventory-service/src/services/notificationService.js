@@ -10,6 +10,17 @@ async function createLowStockNotification({ userId, productName, quantity, thres
   });
 }
 
+
+async function createRestockNotification({ userId, productName, quantity }) {
+  return Notification.create({
+    user: userId,
+    type: 'INFO',
+    title: 'Restock Requested',
+    message: `Admin has requested a restock for ${productName} (Quantity: ${quantity})`,
+    read: false
+  });
+}
+
 async function getUserNotifications(userId) {
   return Notification.find({ user: userId }).sort({ createdAt: -1 });
 }
@@ -20,6 +31,7 @@ async function markNotificationRead(notificationId) {
 
 module.exports = {
   createLowStockNotification,
+  createRestockNotification,
   getUserNotifications,
   markNotificationRead
 };
