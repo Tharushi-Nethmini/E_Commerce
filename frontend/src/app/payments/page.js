@@ -152,17 +152,29 @@ function PaymentsPage() {
   // Fetch both FULFILLED and PAID restock requests for supplier payments
   const fetchSupplierPayments = useCallback(() => {
     if (isAdmin) {
-      // Fetch both statuses in parallel and merge
+      // Fetch restock requests and supplier payment records in parallel, then merge.
       Promise.all([
         api.get(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/fulfilled`).then(res => res.data || []).catch(() => []),
-        api.get(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/paid`).then(res => res.data || []).catch(() => [])
-      ]).then(([fulfilled, paid]) => {
+        api.get(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/paid`).then(res => res.data || []).catch(() => []),
+        api.get(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/supplier-payments`).then(res => res.data || []).catch(() => [])
+      ]).then(([fulfilled, paid, supplierPayments]) => {
+        const paidRequestIds = new Set(
+          supplierPayments
+            .map((p) => p?.restockRequestId?._id || p?.restockRequestId)
+            .filter(Boolean)
+            .map(String)
+        );
+
         // Deduplicate by _id, always prefer PAID status if both exist
         const byId = {};
         for (const req of [...fulfilled, ...paid]) {
-          const id = req._id;
-          if (!byId[id] || req.status === 'PAID') {
-            byId[id] = req;
+          const id = String(req._id);
+          const normalizedReq = paidRequestIds.has(id)
+            ? { ...req, status: 'PAID' }
+            : req;
+
+          if (!byId[id] || normalizedReq.status === 'PAID') {
+            byId[id] = normalizedReq;
           }
         }
         const all = Object.values(byId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

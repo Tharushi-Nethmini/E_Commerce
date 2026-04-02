@@ -11,6 +11,14 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8083;
+const DEFAULT_MONGODB_URI = process.env.NODE_ENV === 'production'
+  ? 'mongodb://mongodb:27017/payment-service'
+  : 'mongodb://127.0.0.1:27017/payment-service';
+const MONGODB_URI = process.env.MONGODB_URI
+  ? (process.env.NODE_ENV === 'production'
+    ? process.env.MONGODB_URI.replace(/mongodb:\/\/(127\.0\.0\.1|localhost)/, 'mongodb://mongodb')
+    : process.env.MONGODB_URI)
+  : DEFAULT_MONGODB_URI;
 
 // Middleware
 app.use(helmet());
@@ -54,7 +62,7 @@ app.use((req, res) => {
 });
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB');
     app.listen(PORT, () => {

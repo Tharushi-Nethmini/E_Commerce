@@ -23,7 +23,26 @@ exports.createSupplierPayment = async (req, res) => {
       console.error('[SupplierPayment] Missing required fields:', { restockRequestId, supplierId, amount, paymentMethod });
       return res.status(400).json({ message: 'Missing required fields.' });
     }
-    // Create payment record
+    // Mark restock request as PAID via inventory-service API first.
+    // Prefer the current caller's auth token, fall back to ADMIN_TOKEN.
+    const inventoryServiceUrl = process.env.INVENTORY_SERVICE_URL || 'http://inventory-service:8082';
+    const requestAuthHeader = req.headers?.authorization;
+    const adminToken = process.env.ADMIN_TOKEN;
+
+    const headers = {};
+    if (requestAuthHeader) {
+      headers.Authorization = requestAuthHeader;
+    } else if (adminToken) {
+      headers.Authorization = `Bearer ${adminToken}`;
+    }
+
+    await axios.patch(
+      `${inventoryServiceUrl}/api/inventory/restock-requests/${restockRequestId}/pay`,
+      {},
+      { headers }
+    );
+
+    // Create payment record only after restock status update succeeds.
     const payment = await SupplierPayment.create({
       restockRequestId,
       supplierId,
@@ -34,25 +53,11 @@ exports.createSupplierPayment = async (req, res) => {
       paidAt: new Date()
     });
 
-    // Mark restock request as PAID via inventory-service API
-    try {
-      // Replace with your actual inventory service URL/port if different
-      const inventoryServiceUrl = process.env.INVENTORY_SERVICE_URL || 'http://localhost:8082';
-      // Use ADMIN_TOKEN from env or config
-      const adminToken = process.env.ADMIN_TOKEN;
-      await axios.patch(
-        `${inventoryServiceUrl}/api/inventory/restock-requests/${restockRequestId}/pay`,
-        {},
-        adminToken ? { headers: { Authorization: `Bearer ${adminToken}` } } : {}
-      );
-    } catch (err) {
-      console.error('[SupplierPayment] Error updating RestockRequest status via inventory-service API:', err?.response?.data || err.message);
-    }
-
     res.status(201).json(payment);
   } catch (error) {
     console.error('[SupplierPayment] Error creating supplier payment:', error);
-    res.status(400).json({ message: error.message });
+    const backendMessage = error?.response?.data?.message;
+    res.status(400).json({ message: backendMessage || error.message });
   }
 };
 

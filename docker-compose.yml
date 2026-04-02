@@ -1,27 +1,7 @@
 # E-Commerce Microservices - Docker Compose Configuration
 # Next.js Frontend + Node.js/Express Backend Services
 
-version: '3.8'
-
 services:
-  # MongoDB Database
-  mongodb:
-    image: mongo:7-jammy
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_DATABASE=ecommerce
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - ecommerce-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # User Service
   user-service:
     build:
@@ -33,12 +13,9 @@ services:
     environment:
       - PORT=8081
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongodb:27017/user-service
-      - JWT_SECRET=your-production-jwt-secret-change-this
-      - JWT_EXPIRES_IN=7d
-    depends_on:
-      mongodb:
-        condition: service_healthy
+      - MONGODB_URI=${USER_SERVICE_MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
     restart: on-failure
     networks:
       - ecommerce-network
@@ -54,10 +31,11 @@ services:
     environment:
       - PORT=8082
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongodb:27017/inventory-service
-    depends_on:
-      mongodb:
-        condition: service_healthy
+      - MONGODB_URI=${INVENTORY_SERVICE_MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
     restart: on-failure
     networks:
       - ecommerce-network
@@ -73,10 +51,9 @@ services:
     environment:
       - PORT=8083
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongodb:27017/payment-service
-    depends_on:
-      mongodb:
-        condition: service_healthy
+      - MONGODB_URI=${PAYMENT_SERVICE_MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - INVENTORY_SERVICE_URL=http://inventory-service:8082
     restart: on-failure
     networks:
       - ecommerce-network
@@ -92,13 +69,12 @@ services:
     environment:
       - PORT=8080
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongodb:27017/order-service
+      - MONGODB_URI=${ORDER_SERVICE_MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
       - USER_SERVICE_URL=http://user-service:8081
       - INVENTORY_SERVICE_URL=http://inventory-service:8082
       - PAYMENT_SERVICE_URL=http://payment-service:8083
     depends_on:
-      mongodb:
-        condition: service_healthy
       user-service:
         condition: service_started
       inventory-service:
@@ -135,7 +111,3 @@ services:
 networks:
   ecommerce-network:
     driver: bridge
-
-volumes:
-  mongodb_data:
-    driver: local

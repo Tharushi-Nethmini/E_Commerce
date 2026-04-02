@@ -8,17 +8,16 @@ export default function AuthRedirector({ children }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const publicPaths = ["/login", "/register"];
 
   useEffect(() => {
     if (!loading) {
-      // If not logged in and not already on /login, redirect
-      if (!user && pathname !== "/login") {
-        if (typeof window !== "undefined") {
-          window.location.href = "http://localhost:3000/login";
-        }
+      // Allow unauthenticated access to public pages.
+      if (!user && !publicPaths.includes(pathname)) {
+        router.replace("/login");
       }
     }
-  }, [user, loading, pathname]);
+  }, [user, loading, pathname, router]);
 
   return children;
 }

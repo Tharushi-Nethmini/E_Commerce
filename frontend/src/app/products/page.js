@@ -143,7 +143,8 @@ function ProductsPage() {
           `${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/products`,
           formData
         )
-        productId = response.data.id || response.data._id
+        const createdProduct = response.data?.product || response.data
+        productId = createdProduct?.id || createdProduct?._id
       }
 
       // Upload image if selected
@@ -184,11 +185,6 @@ function ProductsPage() {
       await api.post(
         `${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/products/${productId}/image`,
         formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
       )
     } catch (error) {
       console.error('Error uploading image:', error)
