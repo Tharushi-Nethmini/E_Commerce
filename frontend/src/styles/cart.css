@@ -359,6 +359,14 @@
   background: #F9FAFB;
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+}
+
+.cart-payment-select select::-ms-expand {
+  display: none;
 }
 
 .cart-payment-select select:focus {
