@@ -29,17 +29,17 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://51.20.120.70:3000](http://51.20.120.70:3000) in your browser.
 
 ### Environment Variables
 
 Create a `.env.local` file:
 
 ```env
-NEXT_PUBLIC_API_USER_SERVICE=http://localhost:8081
-NEXT_PUBLIC_API_INVENTORY_SERVICE=http://localhost:8082
-NEXT_PUBLIC_API_ORDER_SERVICE=http://localhost:8080
-NEXT_PUBLIC_API_PAYMENT_SERVICE=http://localhost:8083
+NEXT_PUBLIC_API_USER_SERVICE=http://51.20.120.70:8081
+NEXT_PUBLIC_API_INVENTORY_SERVICE=http://51.20.120.70:8082
+NEXT_PUBLIC_API_ORDER_SERVICE=http://51.20.120.70:8080
+NEXT_PUBLIC_API_PAYMENT_SERVICE=http://51.20.120.70:8083
 ```
 
 ### Build for Production

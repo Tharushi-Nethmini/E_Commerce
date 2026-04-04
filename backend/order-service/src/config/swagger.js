@@ -13,7 +13,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:8080',
+        url: 'http://51.20.120.70:8080',
         description: 'Development server'
       }
     ],

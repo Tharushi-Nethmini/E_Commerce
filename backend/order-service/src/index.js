@@ -16,7 +16,7 @@ const DEFAULT_MONGODB_URI = process.env.NODE_ENV === 'production'
   : 'mongodb://127.0.0.1:27017/order-service';
 const MONGODB_URI = process.env.MONGODB_URI
   ? (process.env.NODE_ENV === 'production'
-    ? process.env.MONGODB_URI.replace(/mongodb:\/\/(127\.0\.0\.1|localhost)/, 'mongodb://mongodb')
+    ? process.env.MONGODB_URI.replace(/mongodb:\/\/(127\.0\.0\.1|51.20.120.70)/, 'mongodb://mongodb')
     : process.env.MONGODB_URI)
   : DEFAULT_MONGODB_URI;
 
@@ -67,7 +67,7 @@ mongoose.connect(MONGODB_URI)
     console.log('✅ Connected to MongoDB');
     app.listen(PORT, () => {
       console.log(`🚀 Order Service running on port ${PORT}`);
-      console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+      console.log(`📚 API Documentation: http://51.20.120.70:${PORT}/api-docs`);
     });
   })
   .catch((error) => {

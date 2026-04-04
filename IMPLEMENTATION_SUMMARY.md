@@ -209,7 +209,7 @@ Client Request → Order Service
 docker-compose ps
 
 # 2. Create order (shows full integration)
-curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -d '{...}'
+curl -X POST http://51.20.120.70:8080/api/orders -H "Content-Type: application/json" -d '{...}'
 
 # 3. Show logs proving inter-service calls
 docker-compose logs order-service | grep "Calling"

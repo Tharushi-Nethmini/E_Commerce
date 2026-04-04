@@ -118,11 +118,11 @@ docker-compose down
 ```
 
 Access the application:
-- **Frontend**: http://localhost:3000
-- **Order Service API**: http://localhost:8080/api-docs
-- **User Service API**: http://localhost:8081/api-docs
-- **Inventory Service API**: http://localhost:8082/api-docs
-- **Payment Service API**: http://localhost:8083/api-docs
+- **Frontend**: http://51.20.120.70:3000
+- **Order Service API**: http://51.20.120.70:8080/api-docs
+- **User Service API**: http://51.20.120.70:8081/api-docs
+- **Inventory Service API**: http://51.20.120.70:8082/api-docs
+- **Payment Service API**: http://51.20.120.70:8083/api-docs
 
 ### Running Services Individually
 
@@ -176,10 +176,10 @@ npm run dev
 
 Each service has Swagger documentation available:
 
-- **User Service**: http://localhost:8081/api-docs
-- **Inventory Service**: http://localhost:8082/api-docs
-- **Order Service**: http://localhost:8080/api-docs
-- **Payment Service**: http://localhost:8083/api-docs
+- **User Service**: http://51.20.120.70:8081/api-docs
+- **Inventory Service**: http://51.20.120.70:8082/api-docs
+- **Order Service**: http://51.20.120.70:8080/api-docs
+- **Payment Service**: http://51.20.120.70:8083/api-docs
 
 ## 🔧 Service Details
 
@@ -345,7 +345,7 @@ E-Commerce/
 ### 1. Register a User
 
 ```bash
-curl -X POST http://localhost:8081/api/users/register \
+curl -X POST http://51.20.120.70:8081/api/users/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -359,7 +359,7 @@ curl -X POST http://localhost:8081/api/users/register \
 ### 2. Create a Product
 
 ```bash
-curl -X POST http://localhost:8082/api/inventory/products \
+curl -X POST http://51.20.120.70:8082/api/inventory/products \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Sample Product",
@@ -374,7 +374,7 @@ curl -X POST http://localhost:8082/api/inventory/products \
 ### 3. Create an Order
 
 ```bash
-curl -X POST http://localhost:8080/api/orders \
+curl -X POST http://51.20.120.70:8080/api/orders \
   -H "Content-Type: application/json" \
   -d '{
     "userId": "USER_ID_FROM_STEP_1",

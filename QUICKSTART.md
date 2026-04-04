@@ -25,11 +25,11 @@ docker-compose ps
 
 ### Access Services
 
-- **Frontend**: http://localhost:3000
-- **Order API Docs**: http://localhost:8080/api-docs
-- **User API Docs**: http://localhost:8081/api-docs
-- **Inventory API Docs**: http://localhost:8082/api-docs
-- **Payment API Docs**: http://localhost:8083/api-docs
+- **Frontend**: http://51.20.120.70:3000
+- **Order API Docs**: http://51.20.120.70:8080/api-docs
+- **User API Docs**: http://51.20.120.70:8081/api-docs
+- **Inventory API Docs**: http://51.20.120.70:8082/api-docs
+- **Payment API Docs**: http://51.20.120.70:8083/api-docs
 
 ### View Logs
 
@@ -118,14 +118,14 @@ npm run dev
 
 ### 4. Access Application
 
-- **Frontend**: http://localhost:3000
+- **Frontend**: http://51.20.120.70:3000
 - **All API Documentation**: See option 1 above
 
 ## First Time Setup
 
 ### 1. Register a User
 
-Open http://localhost:3000 and click "Register here"
+Open http://51.20.120.70:3000 and click "Register here"
 
 Fill in:
 - Full Name
@@ -237,14 +237,14 @@ Visit the API documentation URLs listed above and use the "Try it out" feature.
 
 **Register User:**
 ```bash
-curl -X POST http://localhost:8081/api/users/register \
+curl -X POST http://51.20.120.70:8081/api/users/register \
   -H "Content-Type: application/json" \
   -d "{\"username\":\"john\",\"email\":\"john@example.com\",\"password\":\"password123\",\"fullName\":\"John Doe\",\"role\":\"CUSTOMER\"}"
 ```
 
 **Create Product:**
 ```bash
-curl -X POST http://localhost:8082/api/inventory/products \
+curl -X POST http://51.20.120.70:8082/api/inventory/products \
   -H "Content-Type: application/json" \
   -d "{\"name\":\"Laptop\",\"description\":\"Gaming Laptop\",\"price\":1299.99,\"quantity\":50,\"category\":\"Electronics\",\"sku\":\"LAP-001\"}"
 ```

@@ -51,12 +51,12 @@ npm start
 ```env
 PORT=8080
 NODE_ENV=development
-MONGODB_URI=mongodb://localhost:27017/order-service
+MONGODB_URI=mongodb://51.20.120.70:27017/order-service
 
 # Service URLs
-USER_SERVICE_URL=http://localhost:8081
-INVENTORY_SERVICE_URL=http://localhost:8082
-PAYMENT_SERVICE_URL=http://localhost:8083
+USER_SERVICE_URL=http://51.20.120.70:8081
+INVENTORY_SERVICE_URL=http://51.20.120.70:8082
+PAYMENT_SERVICE_URL=http://51.20.120.70:8083
 ```
 
 ### Docker
@@ -72,7 +72,7 @@ docker run -p 8080:8080 --env-file .env order-service
 ## API Documentation
 
 Once the service is running, visit:
-- Swagger UI: http://localhost:8080/api-docs
+- Swagger UI: http://51.20.120.70:8080/api-docs
 
 ## Order Creation Flow
 
