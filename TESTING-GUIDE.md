@@ -83,26 +83,26 @@ docker-compose logs mongodb
 
 ```powershell
 # Test User Service
-Invoke-WebRequest -Uri "http://51.20.120.70:8081/api-docs" -Method GET
+Invoke-WebRequest -Uri "http://16.16.24.81:8081/api-docs" -Method GET
 
 # Test Inventory Service
-Invoke-WebRequest -Uri "http://51.20.120.70:8082/api-docs" -Method GET
+Invoke-WebRequest -Uri "http://16.16.24.81:8082/api-docs" -Method GET
 
 # Test Payment Service
-Invoke-WebRequest -Uri "http://51.20.120.70:8083/api-docs" -Method GET
+Invoke-WebRequest -Uri "http://16.16.24.81:8083/api-docs" -Method GET
 
 # Test Order Service
-Invoke-WebRequest -Uri "http://51.20.120.70:8080/api-docs" -Method GET
+Invoke-WebRequest -Uri "http://16.16.24.81:8080/api-docs" -Method GET
 
 # Test Frontend
-Invoke-WebRequest -Uri "http://51.20.120.70:3000" -Method GET
+Invoke-WebRequest -Uri "http://16.16.24.81:3000" -Method GET
 ```
 
 ### 7. Test End-to-End Flow
 
 #### Open Browser
 ```
-http://51.20.120.70:3000
+http://16.16.24.81:3000
 ```
 
 #### Register a User
@@ -211,7 +211,7 @@ npm run dev
 cd frontend
 npm install
 npm run dev
-# Should show: Next.js running on http://51.20.120.70:3000
+# Should show: Next.js running on http://16.16.24.81:3000
 ```
 
 ### Test Service Communication
@@ -225,7 +225,7 @@ $body = @{
     role = "CUSTOMER"
 } | ConvertTo-Json
 
-Invoke-WebRequest -Uri "http://51.20.120.70:8081/api/users/register" `
+Invoke-WebRequest -Uri "http://16.16.24.81:8081/api/users/register" `
     -Method POST `
     -Body $body `
     -ContentType "application/json"
@@ -236,7 +236,7 @@ $loginBody = @{
     password = "Test@123"
 } | ConvertTo-Json
 
-$response = Invoke-WebRequest -Uri "http://51.20.120.70:8081/api/users/login" `
+$response = Invoke-WebRequest -Uri "http://16.16.24.81:8081/api/users/login" `
     -Method POST `
     -Body $loginBody `
     -ContentType "application/json"
@@ -253,7 +253,7 @@ $productBody = @{
     sku = "TEST-001"
 } | ConvertTo-Json
 
-Invoke-WebRequest -Uri "http://51.20.120.70:8082/api/inventory/products" `
+Invoke-WebRequest -Uri "http://16.16.24.81:8082/api/inventory/products" `
     -Method POST `
     -Headers @{Authorization = "Bearer $token"} `
     -Body $productBody `
@@ -270,7 +270,7 @@ Invoke-WebRequest -Uri "http://51.20.120.70:8082/api/inventory/products" `
 - [ ] All services start without errors
 - [ ] All health checks pass
 - [ ] All Swagger UIs accessible
-- [ ] Frontend loads at http://51.20.120.70:3000
+- [ ] Frontend loads at http://16.16.24.81:3000
 - [ ] User registration works
 - [ ] User login works
 - [ ] Product creation works
@@ -345,13 +345,13 @@ Docker Compose Tests:
 [ ] All health checks pass
 
 API Tests:
-[ ] User Service Swagger: http://51.20.120.70:8081/api-docs
-[ ] Inventory Service Swagger: http://51.20.120.70:8082/api-docs
-[ ] Payment Service Swagger: http://51.20.120.70:8083/api-docs
-[ ] Order Service Swagger: http://51.20.120.70:8080/api-docs
+[ ] User Service Swagger: http://16.16.24.81:8081/api-docs
+[ ] Inventory Service Swagger: http://16.16.24.81:8082/api-docs
+[ ] Payment Service Swagger: http://16.16.24.81:8083/api-docs
+[ ] Order Service Swagger: http://16.16.24.81:8080/api-docs
 
 Frontend Tests:
-[ ] Frontend loads: http://51.20.120.70:3000
+[ ] Frontend loads: http://16.16.24.81:3000
 [ ] Registration works
 [ ] Login works
 [ ] Products page loads
@@ -411,8 +411,8 @@ docker-compose up -d
 docker-compose ps
 
 # 5. Test
-Start-Process "http://51.20.120.70:3000"
-Start-Process "http://51.20.120.70:8081/api-docs"
+Start-Process "http://16.16.24.81:3000"
+Start-Process "http://16.16.24.81:8081/api-docs"
 ```
 
 Good luck! 🎉

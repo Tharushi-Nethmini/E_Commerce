@@ -75,7 +75,7 @@ npm start
 ```env
 PORT=8082
 NODE_ENV=development
-MONGODB_URI=mongodb://51.20.120.70:27017/inventory-service
+MONGODB_URI=mongodb://16.16.24.81:27017/inventory-service
 ```
 
 ### Docker
@@ -91,7 +91,7 @@ docker run -p 8082:8082 --env-file .env inventory-service
 ## API Documentation
 
 Once the service is running, visit:
-- Swagger UI: http://51.20.120.70:8082/api-docs
+- Swagger UI: http://16.16.24.81:8082/api-docs
 
 ## Inter-Service Communication
 

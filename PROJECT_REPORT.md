@@ -573,7 +573,7 @@ aws ec2 authorize-security-group-ingress \
 **Environment Variables (`.env`):**
 ```env
 JWT_SECRET=your-secret-key
-MONGODB_URI=mongodb://51.20.120.70:27017/user-service
+MONGODB_URI=mongodb://16.16.24.81:27017/user-service
 PORT=8081
 ```
 

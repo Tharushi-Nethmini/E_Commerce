@@ -1,7 +1,7 @@
 // fetch-admin-token.js
 const axios = require('axios');
 
-const USER_SERVICE_URL = 'http://51.20.120.70:8081'; // Change if needed
+const USER_SERVICE_URL = 'http://16.16.24.81:8081'; // Change if needed
 const ADMIN_USERNAME = 'testadmin1';     // Change to your admin username
 const ADMIN_PASSWORD = 'passworda1';     // Change to your admin password
 

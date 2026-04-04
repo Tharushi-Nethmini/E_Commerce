@@ -61,7 +61,7 @@ npm start
 ```env
 PORT=8083
 NODE_ENV=development
-MONGODB_URI=mongodb://51.20.120.70:27017/payment-service
+MONGODB_URI=mongodb://16.16.24.81:27017/payment-service
 ```
 
 ### Docker
@@ -77,7 +77,7 @@ docker run -p 8083:8083 --env-file .env payment-service
 ## API Documentation
 
 Once the service is running, visit:
-- Swagger UI: http://51.20.120.70:8083/api-docs
+- Swagger UI: http://16.16.24.81:8083/api-docs
 
 ## Inter-Service Communication
 

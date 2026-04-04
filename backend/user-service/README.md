@@ -60,7 +60,7 @@ npm start
 ```env
 PORT=8081
 NODE_ENV=development
-MONGODB_URI=mongodb://51.20.120.70:27017/user-service
+MONGODB_URI=mongodb://16.16.24.81:27017/user-service
 JWT_SECRET=your-super-secret-jwt-key
 JWT_EXPIRES_IN=7d
 ```
@@ -78,7 +78,7 @@ docker run -p 8081:8081 --env-file .env user-service
 ## API Documentation
 
 Once the service is running, visit:
-- Swagger UI: http://51.20.120.70:8081/api-docs
+- Swagger UI: http://16.16.24.81:8081/api-docs
 
 ## Inter-Service Communication
 

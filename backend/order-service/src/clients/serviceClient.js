@@ -1,8 +1,8 @@
 const axios = require('axios');
 
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://51.20.120.70:8081';
-const INVENTORY_SERVICE_URL = process.env.INVENTORY_SERVICE_URL || 'http://51.20.120.70:8082';
-const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://51.20.120.70:8083';
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://16.16.24.81:8081';
+const INVENTORY_SERVICE_URL = process.env.INVENTORY_SERVICE_URL || 'http://16.16.24.81:8082';
+const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://16.16.24.81:8083';
 
 class ServiceClient {
   // User Service calls
