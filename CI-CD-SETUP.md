@@ -47,25 +47,23 @@ Add these secrets to your GitHub repository (Settings → Secrets and variables 
 4. Go to My Account → Security → Generate Token
 5. Add to GitHub Secrets as `SONAR_TOKEN`
 
-## Step 4: Create Workflow Files
+## Step 4: Validate Existing Workflow Files
 
-The following workflows are already created in `.github/workflows/`:
+All required workflows are already present in `.github/workflows/`:
 
-- `user-service.yml` - User service CI/CD
-- `frontend.yml` - Frontend CI/CD
+- `user-service.yml` - User service pipeline
+- `inventory-service.yml` - Inventory service pipeline
+- `payment-service.yml` - Payment service pipeline
+- `order-service.yml` - Order service pipeline
+- `frontend.yml` - Frontend pipeline
 
-You can copy and adapt these for other services:
+Current implementation status:
 
-```bash
-# Copy for other services
-cp .github/workflows/user-service.yml .github/workflows/inventory-service.yml
-cp .github/workflows/user-service.yml .github/workflows/payment-service.yml
-cp .github/workflows/user-service.yml .github/workflows/order-service.yml
-```
-
-Then update paths in each file:
-- Change `backend/user-service` to appropriate service name
-- Update Docker image names
+- All backend services use Node.js 20 setup, `npm ci`, and Jest test command
+- Backend test command uses `npm test -- --passWithNoTests` to avoid false failures when no tests exist yet
+- Security stage runs Snyk and SonarCloud
+- Build stage builds and pushes Docker images to Docker Hub
+- Deploy stage exists as a template and currently needs real cloud deployment commands
 
 ## Step 5: Test CI/CD
 
@@ -117,9 +115,9 @@ git push origin main
    - Uses layer caching for speed
 
 4. **Deploy Stage** (Template)
-   - Only runs on main branch
-   - Ready for AWS ECS/Azure deployment
-   - Commented out - customize for your needs
+  - Runs only on main branch
+  - Placeholder job is present in backend service workflows
+  - You must replace placeholder commands with real AWS/Azure deployment commands
 
 5. **Post-Deploy Smoke Tests** (Recommended)
   - Verify `http://<payment-service-host>/api-docs` is reachable
@@ -269,13 +267,12 @@ Add Slack/Discord notifications:
 
 ## Next Steps
 
-1. ✅ Set up GitHub Secrets
-2. ✅ Create workflow files for all services
-3. ✅ Push to GitHub
-4. ✅ Verify workflows run successfully
-5. ✅ Set up cloud deployment
-6. ✅ Configure production environment
-7. ✅ Enable monitoring and alerts
+1. Set up GitHub Secrets
+2. Push latest workflow changes to `main` or `develop`
+3. Verify all five workflows run in GitHub Actions
+4. Replace deploy placeholders with real cloud deployment commands
+5. Configure production environment variables and secrets
+6. Enable monitoring and alerts
 
 ## Resources
 
