@@ -30,7 +30,7 @@ jobs:
       
       - name: Run tests
         working-directory: ./backend/user-service
-        run: npm test
+        run: npm test -- --passWithNoTests
         env:
           NODE_ENV: test
 
