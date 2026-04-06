@@ -17,6 +17,10 @@ Add these secrets to your GitHub repository (Settings → Secrets and variables 
 - `DOCKER_PASSWORD`: Your Docker Hub password/token
 - `SNYK_TOKEN`: Your Snyk API token
 - `SONAR_TOKEN`: Your SonarCloud token
+- `SSH_HOST`: Public IP or DNS of deployment server
+- `SSH_USER`: SSH username on deployment server
+- `SSH_PRIVATE_KEY`: Private key content used by GitHub Actions to SSH
+- `DEPLOY_PATH`: Absolute path on server where this repository exists
 
 ### For AWS Deployment (Optional)
 
@@ -63,7 +67,7 @@ Current implementation status:
 - Backend test command uses `npm test -- --passWithNoTests` to avoid false failures when no tests exist yet
 - Security stage runs Snyk and SonarCloud
 - Build stage builds and pushes Docker images to Docker Hub
-- Deploy stage exists as a template and currently needs real cloud deployment commands
+- Deploy stage is automated via SSH and redeploys only the changed service on pushes to `main`
 
 ## Step 5: Test CI/CD
 
@@ -114,10 +118,11 @@ git push origin main
    - Pushes to Docker Hub
    - Uses layer caching for speed
 
-4. **Deploy Stage** (Template)
-  - Runs only on main branch
-  - Placeholder job is present in backend service workflows
-  - You must replace placeholder commands with real AWS/Azure deployment commands
+4. **Deploy Stage** (Automated)
+  - Runs only on pushes to `main`
+  - Uses SSH from GitHub Actions to your server
+  - Executes `git pull origin main` in `DEPLOY_PATH`
+  - Rebuilds/restarts only the changed service with `docker compose up -d --build <service>`
 
 5. **Post-Deploy Smoke Tests** (Recommended)
   - Verify `http://<payment-service-host>/api-docs` is reachable
@@ -145,7 +150,7 @@ on:
 
 Will only run on main branch pushes.
 
-## Manual Deployment Trigger
+## Manual Deployment Trigger (Optional)
 
 Add to workflow:
 
@@ -164,6 +169,8 @@ Then you can manually trigger from GitHub Actions tab.
 ## Deployment Examples
 
 ### AWS ECS Deployment
+
+> Current workflows deploy to your server via SSH + Docker Compose. Use this ECS example only if you migrate away from server-based deployment.
 
 Add to deploy job:
 
@@ -184,6 +191,8 @@ Add to deploy job:
 ```
 
 ### Azure Container Apps
+
+> Current workflows deploy to your server via SSH + Docker Compose. Use this Azure example only if you migrate away from server-based deployment.
 
 ```yaml
 - name: Azure Login
@@ -252,6 +261,8 @@ Add Slack/Discord notifications:
 - Check GitHub Secrets are set correctly
 - Verify Docker Hub permissions
 - Check SonarCloud/Snyk tokens
+- Verify `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, and `DEPLOY_PATH`
+- Verify the server has `git`, `docker`, and `docker compose` installed
 
 ### Docker Push Fails
 
