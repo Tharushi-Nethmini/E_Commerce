@@ -98,5 +98,10 @@ jobs:
             cd "${{ secrets.DEPLOY_PATH }}"
             git pull origin main
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-            docker compose up -d --build user-service
+            if docker compose version >/dev/null 2>&1; then
+              COMPOSE_CMD='docker compose'
+            else
+              COMPOSE_CMD='docker-compose'
+            fi
+            $COMPOSE_CMD up -d --build user-service
             docker image prune -f

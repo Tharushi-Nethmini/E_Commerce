@@ -21,6 +21,12 @@ jobs:
             cd "${{ secrets.DEPLOY_PATH }}"
             git pull origin main
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-            docker compose pull || true
-            docker compose up -d --build --remove-orphans
+            # Use `docker compose` if available, otherwise fall back to `docker-compose`
+            if docker compose version >/dev/null 2>&1; then
+              COMPOSE_CMD='docker compose'
+            else
+              COMPOSE_CMD='docker-compose'
+            fi
+            $COMPOSE_CMD pull || true
+            $COMPOSE_CMD up -d --build --remove-orphans
             docker image prune -f
