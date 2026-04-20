@@ -317,9 +317,6 @@ function OrdersPage() {
                     ))
                   ) : (
                     <>
-                      <option value="CREDIT_CARD">Credit Card</option>
-                      <option value="DEBIT_CARD">Debit Card</option>
-                      <option value="PAYPAL">PayPal</option>
                       <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
                     </>
                   )}
