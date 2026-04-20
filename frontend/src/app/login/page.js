@@ -48,7 +48,7 @@ export default function Login() {
       </div>
       <div className="login-card">
         <h1 className="login-title">Welcome back</h1>
-        <p className="login-subtitle">Sign in to your account</p>
+        <p className="login-subtitle">Sign in to my account</p>
 
         {error && (
           <div className="login-error">
