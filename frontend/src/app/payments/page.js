@@ -1,4 +1,5 @@
-'use client'
+"use client";
+
 import { useState, useEffect, useCallback } from 'react'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import api from '@/lib/api'
@@ -11,31 +12,6 @@ import PaySupplierModal from '@/components/PaySupplierModal';
 
 
 function PaymentsPage() {
-      // Handler for deleting a customer payment
-      const handleDeletePayment = async (paymentId) => {
-        console.log('Attempting to delete payment with ID:', paymentId);
-        if (!confirm('Are you sure you want to delete this payment?')) return;
-        try {
-          await api.delete(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/${paymentId}`);
-          setPayments(prev => prev.filter(p => (p._id || p.id) !== paymentId));
-          // Optionally show a success message here
-        } catch (err) {
-          console.error('Delete payment error:', err);
-          alert('Failed to delete payment.');
-        }
-      };
-    // Handler for deleting a restock request
-    const handleDeleteRestock = async (restockId) => {
-      if (!confirm('Are you sure you want to delete this restock request?')) return;
-      try {
-        await api.delete(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/${restockId}`);
-        setRestockPayments(prev => prev.filter(r => r._id !== restockId));
-        // Optionally show a success message here
-      } catch (err) {
-        console.error('Delete restock error:', err);
-        alert('Failed to delete restock request.');
-      }
-    };
   const [restockPayments, setRestockPayments] = useState([]);
   const [payingRestockId, setPayingRestockId] = useState(null);
   const [paySupplierModalOpen, setPaySupplierModalOpen] = useState(false);
@@ -68,6 +44,70 @@ function PaymentsPage() {
   const isAdmin = user?.role === 'ADMIN'
   const userId = user?._id || user?.id
 
+  // Admin: Confirm payment - MOVED INSIDE COMPONENT
+  const handleConfirmPayment = async (paymentId) => {
+    try {
+      await api.patch(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/${paymentId}/confirm`);
+      // Immediately update local state for responsive UI
+      setPayments(prev => prev.map(payment => 
+        (payment._id === paymentId || payment.id === paymentId) 
+          ? { ...payment, status: 'CONFIRMED' }
+          : payment
+      ));
+      // Then refetch to ensure consistency with backend
+      setTimeout(() => fetchPayments(), 100);
+    } catch (err) {
+      console.error('Confirm payment error:', err);
+      const backendMsg = err?.response?.data?.message;
+      alert('Failed to confirm payment.' + (backendMsg ? `\n${backendMsg}` : ''));
+    }
+  };
+
+  // Admin: Cancel payment - MOVED INSIDE COMPONENT
+  const handleCancelPayment = async (paymentId) => {
+    try {
+      await api.patch(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/${paymentId}/cancel`);
+      // Immediately update local state for responsive UI
+      setPayments(prev => prev.map(payment => 
+        (payment._id === paymentId || payment.id === paymentId) 
+          ? { ...payment, status: 'CANCELLED' }
+          : payment
+      ));
+      // Then refetch to ensure consistency with backend
+      setTimeout(() => fetchPayments(), 100);
+    } catch (err) {
+      const backendMsg = err?.response?.data?.message;
+      alert('Failed to cancel payment.' + (backendMsg ? `\n${backendMsg}` : ''));
+    }
+  };
+
+  // Handler for deleting a customer payment
+  const handleDeletePayment = async (paymentId) => {
+    console.log('Attempting to delete payment with ID:', paymentId);
+    if (!confirm('Are you sure you want to delete this payment?')) return;
+    try {
+      await api.delete(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/${paymentId}`);
+      setPayments(prev => prev.filter(p => (p._id || p.id) !== paymentId));
+      // Optionally show a success message here
+    } catch (err) {
+      console.error('Delete payment error:', err);
+      alert('Failed to delete payment.');
+    }
+  };
+  
+  // Handler for deleting a restock request
+  const handleDeleteRestock = async (restockId) => {
+    if (!confirm('Are you sure you want to delete this restock request?')) return;
+    try {
+      await api.delete(`${process.env.NEXT_PUBLIC_API_INVENTORY_SERVICE}/api/inventory/restock-requests/${restockId}`);
+      setRestockPayments(prev => prev.filter(r => r._id !== restockId));
+      // Optionally show a success message here
+    } catch (err) {
+      console.error('Delete restock error:', err);
+      alert('Failed to delete restock request.');
+    }
+  };
+
   const buildHistoryParams = useCallback(() => {
     const params = new URLSearchParams()
 
@@ -94,6 +134,7 @@ function PaymentsPage() {
   }, [isAdmin, userId, statusFilter, startDate, endDate])
 
   const fetchPayments = useCallback(async () => {
+    console.log('fetchPayments called');
     try {
       const queryString = buildHistoryParams()
       const response = await api.get(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/history?${queryString}`)
@@ -121,8 +162,10 @@ function PaymentsPage() {
       }
 
       setPayments(historyPayments)
+      console.log('Fetched payments:', historyPayments)
     } catch (error) {
       console.error('Error fetching payments:', error)
+      alert('Error fetching payments: ' + (error?.message || 'Unknown error'));
     } finally {
       setLoading(false)
     }
@@ -193,8 +236,7 @@ function PaymentsPage() {
     fetchPaymentMethods()
     fetchSupplierPayments();
   }, [user, fetchPayments, fetchPaymentMethods, fetchSupplierPayments]);
-  // Handler for admin to open pay supplier modal
-
+  
   // Fetch supplier bank details and open modal
   const handlePayRestock = async (restock) => {
     let supplierId = restock.productId?.supplier || restock.supplierId;
@@ -268,7 +310,6 @@ function PaymentsPage() {
     setLoading(true)
     await fetchPayments()
   }
-
 
   const resetHistoryFilters = async () => {
     setStatusFilter('ALL')
@@ -354,6 +395,36 @@ function PaymentsPage() {
     return colors[status] || 'payment-status-pending'
   }
 
+  // Add missing handleRefund and handleGenerateInvoice functions if they don't exist
+  const handleRefund = async (paymentId) => {
+    setRefunding(paymentId);
+    try {
+      await api.post(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/${paymentId}/refund`);
+      await fetchPayments();
+      alert('Payment refunded successfully');
+    } catch (err) {
+      console.error('Refund error:', err);
+      alert('Failed to refund payment');
+    } finally {
+      setRefunding(null);
+    }
+  };
+
+  const handleGenerateInvoice = async (paymentId) => {
+    setInvoicing(paymentId);
+    try {
+      const response = await api.get(`${process.env.NEXT_PUBLIC_API_PAYMENT_SERVICE}/api/payments/${paymentId}/invoice`);
+      setInvoiceByPaymentId(prev => ({
+        ...prev,
+        [paymentId]: response.data
+      }));
+    } catch (err) {
+      console.error('Invoice generation error:', err);
+      alert('Failed to generate invoice');
+    } finally {
+      setInvoicing(null);
+    }
+  };
 
   if (loading) {
     return <div className="payments-loading">Loading payments...</div>;
@@ -497,7 +568,16 @@ function PaymentsPage() {
                     <div className="payment-title-row">
                       <h3 className="payment-id">Payment #{payment._id || payment.id}</h3>
                       <span className={`payment-status-badge ${getStatusColor(payment.status)}`}>
-                        {payment.status}
+                        {(() => {
+                          if (!isAdmin) {
+                            if (payment.status === 'CONFIRMED') return 'CONFIRMED';
+                            if (payment.status === 'CANCELLED') return 'CANCELLED';
+                            if (payment.status === 'PENDING') return 'PENDING';
+                            return payment.status;
+                          } else {
+                            return payment.status;
+                          }
+                        })()}
                       </span>
                     </div>
                     <div className="payment-details-grid">
@@ -513,14 +593,35 @@ function PaymentsPage() {
                   </div>
                 </div>
 
-                {/* Admin: refund button for completed payments */}
-                {/* Admin: Delete button for any payment */}
-                {isAdmin && (
+                {isAdmin && payment.status === 'PENDING' && (
+                  <div className="payment-admin-actions">
+                    <button
+                      onClick={() => handleConfirmPayment(payment._id || payment.id)}
+                      className="payment-confirm-btn"
+                      style={{ marginRight: 8 }}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => handleCancelPayment(payment._id || payment.id)}
+                      className="payment-cancel-btn"
+                      style={{ marginRight: 8 }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleDeletePayment(payment._id || payment.id)}
+                      className="payment-delete-btn"
+                    >
+                      <FaTrash /> Delete
+                    </button>
+                  </div>
+                )}
+                {isAdmin && payment.status !== 'PENDING' && (
                   <div className="payment-admin-actions">
                     <button
                       onClick={() => handleDeletePayment(payment._id || payment.id)}
                       className="payment-delete-btn"
-                      style={{ marginRight: 8 }}
                     >
                       <FaTrash /> Delete
                     </button>
@@ -595,110 +696,6 @@ function PaymentsPage() {
           )}
         </div>
       </div>
-
-      {/*
-      <div className="payment-methods-section">
-        <div className="payment-methods-header">
-          <h2 className="payment-methods-title">Payment Methods</h2>
-          <p className="payment-methods-subtitle">Manage your saved cards and choose a default method for faster checkout.</p>
-        </div>
-
-        <form className="payment-method-form" onSubmit={handleAddMethod}>
-          <select
-            className="page-filter-select"
-            value={methodForm.type}
-            onChange={(e) => setMethodForm((prev) => ({ ...prev, type: e.target.value }))}
-          >
-            <option value="CREDIT_CARD">CREDIT_CARD</option>
-            <option value="DEBIT_CARD">DEBIT_CARD</option>
-            <option value="PAYPAL">PAYPAL</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Brand (e.g. VISA)"
-            className="page-search-input"
-            value={methodForm.brand}
-            onChange={(e) => setMethodForm((prev) => ({ ...prev, brand: e.target.value }))}
-          />
-          <input
-            type="text"
-            placeholder="Last 4 digits"
-            className="page-search-input"
-            maxLength={4}
-            value={methodForm.last4}
-            onChange={(e) => setMethodForm((prev) => ({ ...prev, last4: e.target.value.replace(/\D/g, '') }))}
-            required
-          />
-          <input
-            type="number"
-            placeholder="Exp Month"
-            className="page-search-input"
-            min={1}
-            max={12}
-            value={methodForm.expiryMonth}
-            onChange={(e) => setMethodForm((prev) => ({ ...prev, expiryMonth: e.target.value }))}
-          />
-          <input
-            type="number"
-            placeholder="Exp Year"
-            className="page-search-input"
-            min={2024}
-            value={methodForm.expiryYear}
-            onChange={(e) => setMethodForm((prev) => ({ ...prev, expiryYear: e.target.value }))}
-          />
-          <label className="payment-default-checkbox payment-default-toggle">
-            <input
-              type="checkbox"
-              checked={methodForm.isDefault}
-              onChange={(e) => setMethodForm((prev) => ({ ...prev, isDefault: e.target.checked }))}
-            />
-            Set as default
-          </label>
-          <button type="submit" className="payment-secondary-btn payment-add-method-btn" disabled={savingMethod}>
-            {savingMethod ? 'Saving...' : 'Add Method'}
-          </button>
-        </form>
-
-        {methodsLoading ? (
-          <div className="payments-loading">Loading payment methods...</div>
-        ) : (
-          <div className="payment-methods-list">
-            {methods.map((method) => (
-              <div key={method._id || method.id} className="payment-method-card">
-                <div className="payment-method-main">
-                  <p className="payment-method-title">{method.type.replace(/_/g, ' ')} {method.brand ? `- ${method.brand}` : ''}</p>
-                  <p className="payment-method-line">**** {method.last4}</p>
-                  <p className="payment-method-line">Exp: {method.expiryMonth || '--'}/{method.expiryYear || '--'}</p>
-                  {method.isDefault && <span className="payment-default-badge">Default</span>}
-                </div>
-                <div className="payment-method-actions">
-                  {!method.isDefault && (
-                    <button
-                      className="payment-secondary-btn"
-                      onClick={() => handleSetDefaultMethod(method._id || method.id)}
-                      disabled={updatingMethodId === (method._id || method.id)}
-                    >
-                      {updatingMethodId === (method._id || method.id) ? 'Updating...' : 'Set Default'}
-                    </button>
-                  )}
-                  <button
-                    className="payment-delete-btn"
-                    onClick={() => handleDeleteMethod(method._id || method.id)}
-                    disabled={deletingMethodId === (method._id || method.id)}
-                  >
-                    {deletingMethodId === (method._id || method.id) ? 'Deleting...' : 'Delete'}
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {methods.length === 0 && (
-              <div className="payments-empty">No saved payment methods yet.</div>
-            )}
-          </div>
-        )}
-      </div>
-      */}
     </div>
   )
 }
@@ -710,4 +707,3 @@ export default function Page() {
     </ProtectedRoute>
   )
 }
-

@@ -1,3 +1,47 @@
+/* Confirm and Cancel Button Styles for Payments Page */
+.payment-confirm-btn {
+  padding: 0.35rem 1.1rem;
+  border-radius: 1.2rem;
+  border: 1.5px solid #22c55e;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  margin-right: 0.5rem;
+}
+.payment-confirm-btn:hover:not(:disabled) {
+  background: #bbf7d0;
+  color: #166534;
+  border-color: #16a34a;
+}
+.payment-confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payment-cancel-btn {
+  padding: 0.35rem 1.1rem;
+  border-radius: 1.2rem;
+  border: 1.5px solid #ef4444;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  margin-right: 0.5rem;
+}
+.payment-cancel-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #dc2626;
+}
+.payment-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .users-table th.action-col, .users-table td.action-col {
   min-width: 380px;
   max-width: 520px;

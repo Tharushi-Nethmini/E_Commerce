@@ -12,6 +12,24 @@ const { v4: uuidv4 } = require('uuid');
 // module.exports = new PaymentService();
 
 class PaymentService {
+  // Admin: Confirm payment
+  async confirmPayment(paymentId) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      throw new Error('Payment not found');
+    }
+    if (payment.status !== 'PENDING') {
+      throw new Error('Only PENDING payments can be confirmed');
+    }
+    payment.status = 'CONFIRMED';
+    await payment.save();
+    return {
+      success: true,
+      message: 'Payment confirmed',
+      paymentId: payment._id,
+      status: payment.status
+    };
+  }
     // Delete payment by ID
     async deletePayment(paymentId) {
       const deletedPayment = await Payment.findByIdAndDelete(paymentId);
@@ -24,29 +42,48 @@ class PaymentService {
         paymentId
       };
     }
+  // Admin: Cancel payment
+  async cancelPayment(paymentId) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      throw new Error('Payment not found');
+    }
+    if (payment.status !== 'PENDING') {
+      throw new Error('Only PENDING payments can be cancelled');
+    }
+    payment.status = 'CANCELLED';
+    await payment.save();
+    return {
+      success: true,
+      message: 'Payment cancelled',
+      paymentId: payment._id,
+      status: payment.status
+    };
+  }
   // Process payment (called by Order Service)
   async processPayment(paymentData) {
     try {
       const { userId, orderId, amount, paymentMethod } = paymentData;
 
-      // Create payment record
+      // Create payment record with status PENDING
       const payment = new Payment({
         userId,
         orderId,
         amount,
         paymentMethod,
-        status: 'PROCESSING'
+        status: 'PENDING'
       });
 
       await payment.save();
 
-      // Simulate payment processing
+      // Simulate payment processing (but do NOT auto-complete)
       // In production, this would integrate with payment gateway (Stripe, PayPal, etc.)
       const paymentResult = await this.simulatePaymentGateway(payment);
 
       if (paymentResult.success) {
-        payment.status = 'COMPLETED';
+        // Only set transactionId, keep status as PENDING for admin action
         payment.transactionId = paymentResult.transactionId;
+        // Optionally, you can set processedAt here if you want to track gateway processing
         payment.processedAt = new Date();
       } else {
         payment.status = 'FAILED';
@@ -60,7 +97,7 @@ class PaymentService {
         paymentId: payment._id,
         transactionId: payment.transactionId,
         status: payment.status,
-        message: paymentResult.success ? 'Payment processed successfully' : paymentResult.reason
+        message: paymentResult.success ? 'Payment created and pending admin confirmation' : paymentResult.reason
       };
     } catch (error) {
       throw error;
