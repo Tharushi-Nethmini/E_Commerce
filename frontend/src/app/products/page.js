@@ -6,6 +6,31 @@ import api from '@/lib/api'
 import { FaPlus, FaEdit, FaTrash, FaImage, FaShoppingCart } from 'react-icons/fa'
 import '@/styles/products.css'
 
+const ALLOWED_IMAGE_PROTOCOLS = new Set(['http:', 'https:', 'blob:'])
+const SAFE_IMAGE_DATA_URL = /^data:image\/(png|jpeg|jpg|gif|webp|bmp);base64,[a-z0-9+/=\s]+$/i
+
+const getSafeImageSrc = (value) => {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  if (/^data:/i.test(trimmed)) {
+    return SAFE_IMAGE_DATA_URL.test(trimmed) ? trimmed : null
+  }
+
+  try {
+    const parsed = new URL(trimmed, 'http://16.16.24.81')
+    return ALLOWED_IMAGE_PROTOCOLS.has(parsed.protocol) ? trimmed : null
+  } catch {
+    return null
+  }
+}
+
 function ProductsPage() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'ADMIN'
@@ -172,7 +197,7 @@ function ProductsPage() {
         return
       }
       setImageFile(file)
-      setImagePreview(URL.createObjectURL(file))
+      setImagePreview(getSafeImageSrc(URL.createObjectURL(file)))
     }
   }
 
@@ -217,7 +242,7 @@ function ProductsPage() {
       sku: product.sku
     })
     setImageFile(null)
-    setImagePreview(product.imageUrl || null)
+    setImagePreview(getSafeImageSrc(product.imageUrl))
     setShowModal(true)
   }
 
@@ -259,6 +284,7 @@ function ProductsPage() {
       p.sku?.toLowerCase().includes(q)
     )
   })
+  const safeImagePreview = getSafeImageSrc(imagePreview)
 
   return (
     <div>
@@ -306,18 +332,21 @@ function ProductsPage() {
       </div>
 
       <div className="products-grid">
-        {filteredProducts.map((product) => (
+        {filteredProducts.map((product) => {
+          const productImageSrc = getSafeImageSrc(product.imageUrl)
+
+          return (
           <div key={getProductId(product)} className="product-card">
-            {product.imageUrl && (
+            {productImageSrc && (
               <div className="product-image-container">
                 <img 
-                  src={product.imageUrl} 
+                  src={productImageSrc} 
                   alt={product.name}
                   className="product-image"
                 />
               </div>
             )}
-            {!product.imageUrl && (
+            {!productImageSrc && (
               <div className="product-image-container">
                 <div className="product-image-placeholder">
                   <FaImage />
@@ -383,7 +412,8 @@ function ProductsPage() {
               )}
             </div>
           </div>
-        ))}
+          )
+        })}
       </div>
 
       {showModal && (
@@ -463,9 +493,9 @@ function ProductsPage() {
               <div className="product-form-group">
                 <label>Product Image</label>
                 <div className="product-image-zone">
-                  {imagePreview ? (
+                  {safeImagePreview ? (
                     <img
-                      src={imagePreview}
+                      src={safeImagePreview}
                       alt="Preview"
                       className="product-image-preview"
                     />
