@@ -2,11 +2,17 @@ const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/paymentController');
 const {
-	validatePayment,
-	validateRefund,
-	validatePaymentMethod,
-	validatePaymentMethodUpdate
+  validatePayment,
+  validateRefund,
+  validatePaymentMethod,
+  validatePaymentMethodUpdate
 } = require('../middleware/validation');
+
+// Admin: Confirm payment
+router.patch('/:id/confirm', paymentController.confirmPayment);
+
+// Admin: Cancel payment
+router.patch('/:id/cancel', paymentController.cancelPayment);
 
 /**
  * @swagger

@@ -1,6 +1,25 @@
 const paymentService = require('../services/paymentService');
 
 class PaymentController {
+  // Admin: Confirm payment
+  async confirmPayment(req, res) {
+    try {
+      const result = await paymentService.confirmPayment(req.params.id);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
+  // Admin: Cancel payment
+  async cancelPayment(req, res) {
+    try {
+      const result = await paymentService.cancelPayment(req.params.id);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
   // Delete payment by ID
   async deletePayment(req, res) {
     try {
