@@ -1,6 +1,6 @@
 const Payment = require('../models/Payment');
 const PaymentMethod = require('../models/PaymentMethod');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 
 // ...existing code...
@@ -73,7 +73,7 @@ class PaymentService {
       setTimeout(() => {
         resolve({
           success: true,
-          transactionId: `TXN-${uuidv4()}`
+          transactionId: `TXN-${randomUUID()}`
         });
       }, 1000); // Simulate processing delay
     });

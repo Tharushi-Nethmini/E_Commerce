@@ -16,7 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.13.6",
+    "axios": "^1.15.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
@@ -25,8 +25,7 @@
     "mongoose": "^8.1.1",
     "morgan": "^1.10.0",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0",
-    "uuid": "^9.0.1"
+    "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",
