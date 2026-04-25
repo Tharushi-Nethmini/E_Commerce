@@ -43,7 +43,7 @@ export default function Login() {
     <div className="login-container">
       <div className="login-brand">
         <div className="login-brand-logo">N</div>
-        <h2 className="login-brand-name">NexMart</h2>
+        <h2 className="login-brand-name">NexMart UPDATE</h2>
         <p className="login-brand-tagline">Your modern shopping destination</p>
       </div>
       <div className="login-card">
